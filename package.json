@@ -1,6 +1,7 @@
 {
-    "name": "vue-taxonomy-editor",
-    "version": "0.0.1",
+    "name": "@oarepo/vue-taxonomy-editor",
+    "version": "1.0.0",
+    "main": "index.esm.js",
     "description": "Vue/Quasar taxonomy editor",
     "productName": "Vue/Quasar taxonomy editor",
     "cordovaId": "org.oarepo.vue_taxonomy_editor",
@@ -9,10 +10,11 @@
     "scripts": {
         "lint": "eslint --ext .js,.vue src",
         "test": "echo \"No test specified\" && exit 0",
-        "build": "rm -rf dist; bili -c bili.config.js --plugins.vue --format esm && cp package.json dist/",
+        "build": "rm -rf dist; bili --babelrc --verbose -c bili.config.js --plugins.vue --format esm && cp package.json dist/; sed -i 's#../node_modules/@babel#@babel#' dist/index.esm.js; mv dist/index.esm.css dist/styles.css",
         "run": "quasar dev"
     },
-    "dependencies": {
+    "peerDependencies": {
+        "@babel/runtime-corejs2": "^7.5.5",
         "@quasar/extras": "^1.0.0",
         "axios": "^0.18.1",
         "liquor-tree": "^0.2.59",

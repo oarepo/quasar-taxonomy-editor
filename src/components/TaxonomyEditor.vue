@@ -22,8 +22,8 @@
             <div slot-scope=" { node } " class="node-container full-width">
                 <div class="row">
                     <div class="col">
-                        <slot :name="`item:${taxonomyCode || 'default'}`">
-                            <slot name="item">
+                        <slot :name="`item-${taxonomyCode || 'default'}`" v-bind:item="node.data">
+                            <slot name="item" v-bind:item="node.data">
                                 <div class="node-text">
                                     {{ node.data.title && (
                                     node.data.title[$q.lang.getLocale()] || node.data.title._ || node.data.title)

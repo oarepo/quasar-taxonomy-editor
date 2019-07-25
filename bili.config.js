@@ -12,6 +12,22 @@ module.exports = {
     input,
     banner: true,
     filename: 'src/index.js',
+    runtimeHelpers: true,
     formats: ['es'],
-    plugins: []
+    plugins: {
+        babel: {
+            runtimeHelpers: true
+        }
+    },
+    extendRollupConfig: (config) => {
+        // console.log(JSON.stringify(config))
+        config.inputConfig.plugins.forEach(x => {
+            if (x.name === 'babel') {
+                x.runtimeHelpers = true
+                x.exclude = 'node_modules/**'
+            }
+        })
+        //
+        return config
+    }
 }

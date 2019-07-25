@@ -3,7 +3,7 @@
  * OARepo vue.js default components to be used in vuejs based client for invenio repository
  *
  */
-import TaxonomyEditor from './components/TaxonomyEditor'
+import TaxonomyEditor from './components/TaxonomyEditor.vue'
 
 const VueTaxonomy = {
     install (Vue) {
