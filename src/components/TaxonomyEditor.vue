@@ -91,7 +91,7 @@ class TaxonomyEditor extends Vue {
             emptyText: 'Nothing found!',
             matcher: (query, node) => {
                 if (this.filterMatcher) {
-                    return this.filterMatcher(query, node)
+                    return this.filterMatcher({taxonomyCode: this.taxonomyCode, query, node})
                 }
                 const val = JSON.stringify(node.data)
                 return new RegExp(query, 'i').test(val)
