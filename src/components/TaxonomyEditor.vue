@@ -6,11 +6,26 @@
         </div>
     -->
     <div class="tree">
-        <div class="buttons">
+        <div class="buttons row">
             <q-btn icon="expand_more" flat color="primary" dense @click="$refs.tree.findAll({}).expand()"
                    title="expand all"></q-btn>
             <q-btn icon="expand_less" flat color="primary" dense @click="$refs.tree.findAll({}).collapse()"
                    title="collapse all"></q-btn>
+            <q-btn icon="subdirectory_arrow_left" class="rotate-90" flat color="primary" dense @click="taxonomyUp()"
+                   title="Taxonomy up" v-if="parentTaxonomyUrl"></q-btn>
+            <div class="title q-mt-sm q-ml-md" v-if="subtree">
+                <slot name="title" v-bind:subtree="subtree">
+                    {{ subtree.title }}
+                </slot>
+            </div>
+            <q-space/>
+            <q-input v-model="filter" dense class="q-mr-lg">
+                <template v-slot:append>
+                <q-icon v-if="filter !== ''" name="close" @click="filter = ''" class="cursor-pointer"/>
+                <q-icon name="search"/>
+                </template>
+            </q-input>
+
         </div>
         <tree :data="data" :options="opts" :filter="filter" ref="tree"
               @node:editing:start="editNode"
@@ -36,6 +51,8 @@
                         <q-btn href="#" @click.stop="editNode(node)" flat icon="edit" size="sm" color="primary"></q-btn>
                         <q-btn href="#" @click.stop="addChildNode(node)" flat icon="playlist_add" size="sm"
                                color="primary"></q-btn>
+                        <q-btn href="#" @click.stop="openTaxonomy(node)" flat icon="fullscreen" size="sm"
+                               color="primary" v-if="node.data.descendants_count>0"></q-btn>
                         <q-btn href="#" @click.stop="removeNode(node)" flat icon="remove" size="sm" color="red"></q-btn>
                     </div>
                 </div>
@@ -59,22 +76,38 @@ export default @Component({
     props: {
         'taxonomyUrl': String,
         'taxonomyCode': String,
-        'editDialogComponent': [Object, Function]
+        'editDialogComponent': [Object, Function],
+        'filterMatcher': Function
     }
 })
 class TaxonomyEditor extends Vue {
-    filter = null
+    filter = ''
     opts = {
         // minFetchDelay: 1000,
         // fetchData: node => Promise.resolve(this.data[node.id - 1]),
         checkbox: false,
-        dnd: true
+        dnd: true,
+        filter: {
+            emptyText: 'Nothing found!',
+            matcher: (query, node) => {
+                if (this.filterMatcher) {
+                    return this.filterMatcher(query, node)
+                }
+                const val = JSON.stringify(node.data)
+                return new RegExp(query, 'i').test(val)
+            },
+            plainList: false,
+            showChildren: true
+        }
     }
     data = []
     dataReady = false
+    localTaxonomyUrl = null
+    parentTaxonomyUrl = null
+    subtree = null
 
     mounted () {
-        this.loadTaxonomy()
+        this.onTaxonomyUrl()
     }
 
     editNode (node) {
@@ -125,7 +158,7 @@ class TaxonomyEditor extends Vue {
             component: this.editDialogComponent || DefaultEditDialogComponent,
             persistent: true
         }).onOk(data => {
-            this.$axios.post(this.taxonomyUrl, data).then(data => {
+            this.$axios.post(this.localTaxonomyUrl, data).then(data => {
                 // add the node top-level
                 this.$refs.tree.append({ data: data.data })
             })
@@ -144,16 +177,33 @@ class TaxonomyEditor extends Vue {
     }
 
     @Watch('taxonomyUrl')
+    onTaxonomyUrl () {
+        console.log('taxonomy url', this.taxonomyUrl)
+        if (this.taxonomyUrl !== undefined) {
+            this.localTaxonomyUrl = this.taxonomyUrl
+            this.loadTaxonomy()
+        }
+    }
+
     loadTaxonomy () {
         this.dataReady = false
-        if (this.taxonomyUrl !== undefined) {
-            this.$axios.get(this.taxonomyUrl, {
+        console.log('loading taxonomy', this.localTaxonomyUrl)
+        if (this.localTaxonomyUrl !== null) {
+            this.$axios.get(this.localTaxonomyUrl, {
                 headers: {
                     'Accept': 'application/json; drilldown=true'
                 }
             }).then(data => {
-                this.data = this.processData(data.data)
-                console.log(this.data)
+                if (Array.isArray(data.data)) {
+                    this.data = this.processData(data.data)
+                    this.parentTaxonomyUrl = null
+                    this.subtree = null
+                } else {
+                    console.log(data.data)
+                    this.parentTaxonomyUrl = data.data.links.parent_tree || null
+                    this.data = this.processData(data.data.children)
+                    this.subtree = data.data
+                }
                 this.$nextTick(() => {
                     this.dataReady = true
                 })
@@ -168,11 +218,29 @@ class TaxonomyEditor extends Vue {
     }
 
     dragFinish (node, targetNode, dropPosition) {
-        this.$axios.post(node.data.links.self, {
-            move_target: node.parent ? node.parent.data.links.self : '/'
+        this.$axios.post(node.data.links.self, '', {
+            headers: {
+                'Destination': targetNode.data.links.self,
+                'Destination-Order': {
+                    'drag-on': 'inside',
+                    'drag-above': 'before',
+                    'drag-below': 'after'
+                }[dropPosition],
+                'Content-Type': 'application/vnd.move'
+            }
         }).then(resp => {
             console.log('Dragging finished', resp)
         })
+    }
+
+    openTaxonomy (node) {
+        this.localTaxonomyUrl = node.data.links.tree
+        this.loadTaxonomy()
+    }
+
+    taxonomyUp () {
+        this.localTaxonomyUrl = this.parentTaxonomyUrl
+        this.loadTaxonomy()
     }
 }
 </script>
@@ -183,4 +251,7 @@ class TaxonomyEditor extends Vue {
 
     .buttons
         margin-left: 0px
+
+    .title
+        color: $secondary
 </style>

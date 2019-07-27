@@ -12,7 +12,7 @@
             </q-card-section>
             <q-separator></q-separator>
             <q-card-section v-if="selectedTaxonomy">
-                <taxonomy-editor :taxonomy-url="selectedTaxonomy.links.self"
+                <taxonomy-editor :taxonomy-url="selectedTaxonomy.links.tree"
                                  :taxonomy-code="selectedTaxonomy.code">
                 </taxonomy-editor>
             </q-card-section>

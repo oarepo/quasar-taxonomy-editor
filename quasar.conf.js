@@ -52,7 +52,8 @@ module.exports = function (ctx) {
                 'QCardActions',
                 'QSelect',
                 'QSeparator',
-                'QDialog'
+                'QDialog',
+                'QSpace'
             ],
 
             directives: [
