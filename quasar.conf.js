@@ -17,7 +17,7 @@ module.exports = function (ctx) {
         extras: [
             // 'ionicons-v4',
             // 'mdi-v3',
-            // 'fontawesome-v5',
+            'fontawesome-v5',
             // 'eva-icons',
             // 'themify',
             // 'roboto-font-latin-ext', // this or either 'roboto-font', NEVER both!
@@ -53,7 +53,11 @@ module.exports = function (ctx) {
                 'QSelect',
                 'QSeparator',
                 'QDialog',
-                'QSpace'
+                'QSpace',
+                'QField',
+                'QAvatar',
+                'QChip',
+                'QSeparator'
             ],
 
             directives: [
@@ -91,7 +95,7 @@ module.exports = function (ctx) {
 
         devServer: {
             https: true,
-            port: 8080,
+            port: 8090,
             open: false, // opens browser window automatically
             proxy: {
                 '/api': {
@@ -100,7 +104,7 @@ module.exports = function (ctx) {
                     secure: false,
                     changeOrigin: false,
                     logLevel: 'debug'
-                },
+                }
             }
         },
 
