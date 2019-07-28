@@ -3,20 +3,28 @@
     <q-field :label="label" stack-label @click.native.stop="showSelectionDialog()">
         <template v-slot:control>
         <div class="self-center full-width no-outline" tabindex="0">
-            <div :class="{inline: 'inline-term'}" v-for="selected in selectedTerms" :key="selected.links.self">
-                <slot name="selected-item" v-bind:item="selected">
-                    <div v-if="multiple">
-                        <q-chip removable color="primary" @remove="removeSelected(selected)" text-color="white">
-                            <slot name="selected-item-multiple" v-bind:item="selected">
+            <div :class="{'inline-term': inline}" v-for="selected in selectedTerms" :key="selected.links.self">
+                <slot name="selected-item-wrapper" v-bind:item="selected">
+                    <template v-if="multiple">
+                    <q-chip outline removable color="primary" @remove="removeSelected(selected)">
+                        <slot name="selected-item-multiple" v-bind:item="selected">
+                            <slot name="selected-item" v-bind:item="selected">
+                                <slot name="item" v-bind:item="selected">
+                                    {{ selected.title}}
+                                </slot>
+                            </slot>
+                        </slot>
+                    </q-chip>
+                    </template>
+                    <template v-else>
+                    <slot name="selected-item-single" v-bind:item="selected">
+                        <slot name="selected-item" v-bind:item="selected">
+                            <slot name="item" v-bind:item="selected">
                                 {{ selected.title}}
                             </slot>
-                        </q-chip>
-                    </div>
-                    <div v-else>
-                        <slot name="selected-item-multiple" v-bind:item="selected">
-                            {{ selected.title}}
                         </slot>
-                    </div>
+                    </slot>
+                    </template>
                 </slot>
             </div>
         </div>
@@ -133,12 +141,24 @@ class DialogTaxonomyInput extends mixins(TaxonomyMixin) {
                 this.selectedTerms = []
             }
         }
-        console.log('initial value set to', this.selectedTerms)
     }
 
     showSelectionDialog () {
-        this.loadTaxonomy()
-        this.selectorShown = true
+        this.loadTaxonomy().then(() => {
+            this.selectorShown = true
+            this.$nextTick(() => {
+                setTimeout(() => {
+                    if (this.multiple && this.selectedTerms) {
+                        this.selectedTerms.forEach(term => {
+                            const selection = this.$refs.tree.find({ data: { id: term.id } })
+                            if (selection) {
+                                selection.check()
+                            }
+                        })
+                    }
+                }, 10)
+            })
+        })
     }
 
     singleValueSelectedClick (term) {
@@ -158,8 +178,12 @@ class DialogTaxonomyInput extends mixins(TaxonomyMixin) {
     }
 
     multipleValuesSelected () {
-        const foundTerms = this.$refs.tree.find({ state: { checked: true } }, true)
-        this.selectedTerms = foundTerms.map(x => x.data)
+        const foundTerms = this.$refs.tree.findAll({ state: { checked: true } })
+        if (foundTerms !== null) {
+            this.selectedTerms = foundTerms.map(x => x.data)
+        } else {
+            this.selectedTerms = []
+        }
         this.selectorShown = false
         this.emit()
     }

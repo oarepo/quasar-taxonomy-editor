@@ -52,46 +52,52 @@ class TaxonomyMixin extends Vue {
         console.log('taxonomy url', this.taxonomyUrl)
         if (this.taxonomyUrl !== undefined) {
             this.localTaxonomyUrl = this.taxonomyUrl
-            this.loadTaxonomy()
+            this.loadTaxonomy().then(() => {})
         }
     }
 
     loadTaxonomy () {
-        this.dataReady = false
-        console.log('loading taxonomy', this.localTaxonomyUrl)
-        if (this.localTaxonomyUrl !== null) {
-            this.$axios.get(this.localTaxonomyUrl, {
-                headers: {
-                    'Accept': 'application/json; drilldown=true'
-                }
-            }).then(data => {
-                if (Array.isArray(data.data)) {
-                    this.data = this.processData(data.data)
-                    this.parentTaxonomyUrl = null
-                    this.subtree = null
-                } else {
-                    console.log(data.data)
-                    this.parentTaxonomyUrl = data.data.links.parent_tree || null
-                    this.data = this.processData(data.data.children)
-                    this.subtree = data.data
-                }
-                this.$nextTick(() => {
-                    this.dataReady = true
+        return new Promise((resolve, reject) => {
+            this.dataReady = false
+            console.log('loading taxonomy', this.localTaxonomyUrl)
+            if (this.localTaxonomyUrl !== null) {
+                this.$axios.get(this.localTaxonomyUrl, {
+                    headers: {
+                        'Accept': 'application/json; drilldown=true'
+                    }
+                }).then(data => {
+                    if (Array.isArray(data.data)) {
+                        this.data = this.processData(data.data)
+                        this.parentTaxonomyUrl = null
+                        this.subtree = null
+                    } else {
+                        console.log(data.data)
+                        this.parentTaxonomyUrl = data.data.links.parent_tree || null
+                        this.data = this.processData(data.data.children)
+                        this.subtree = data.data
+                    }
+                    this.$nextTick(() => {
+                        this.dataReady = true
+                    })
+                    resolve()
+                }).catch(() => {
+                    resolve()
                 })
-            })
-        } else {
-            this.data = []
-        }
+            } else {
+                this.data = []
+                resolve()
+            }
+        })
     }
 
     openTaxonomy (node) {
         this.localTaxonomyUrl = node.data.links.tree
-        this.loadTaxonomy()
+        this.loadTaxonomy().then(() => {})
     }
 
     taxonomyUp () {
         this.localTaxonomyUrl = this.parentTaxonomyUrl
-        this.loadTaxonomy()
+        this.loadTaxonomy().then(() => {})
     }
 }
 
