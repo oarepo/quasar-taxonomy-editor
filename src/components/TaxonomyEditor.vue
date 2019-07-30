@@ -17,7 +17,7 @@
             </div>
             <slot name="buttons-right"></slot>
             <q-space/>
-            <q-input v-model="filter" dense class="q-mr-lg">
+            <q-input v-model="filter" dense class="q-mr-lg print-hide">
                 <template v-slot:append>
                 <q-icon v-if="filter !== ''" name="close" @click="filter = ''" class="cursor-pointer"/>
                 <q-icon name="search"/>
@@ -55,7 +55,7 @@
             </div>
         </tree>
     </div>
-    <q-btn round @click="addNode" icon="add" color="primary"></q-btn>
+    <q-btn round @click="addNode" icon="add" color="primary" class="print-hide"></q-btn>
 </div>
 </template>
 
