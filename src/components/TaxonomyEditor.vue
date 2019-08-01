@@ -12,7 +12,8 @@
                    title="Taxonomy up" v-if="parentTaxonomyUrl"></q-btn>
             <div class="title q-mt-sm q-ml-md" v-if="subtree">
                 <slot name="title" v-bind:subtree="subtree">
-                    {{ subtree.title }}
+                    <component :is="viewComponent" :taxonomy-code="taxonomyCode"
+                               :term="subtree"></component>
                 </slot>
             </div>
             <slot name="buttons-right"></slot>
@@ -36,7 +37,7 @@
                         <slot :name="`item-${taxonomyCode || 'default'}`" v-bind:item="node.data">
                             <slot name="item" v-bind:item="node.data">
                                 <div class="node-text">
-                                    <component :is="viewComponent(taxonomyCode)" :taxonomy-code="taxonomyCode"
+                                    <component :is="viewComponent" :taxonomy-code="taxonomyCode"
                                                :term="node.data"></component>
                                 </div>
                             </slot>
@@ -158,8 +159,8 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
         })
     }
 
-    viewComponent (taxonomyCode) {
-        return this.$taxonomies.viewers[taxonomyCode] || DefaultViewComponent
+    get viewComponent () {
+        return this.$taxonomies.viewers[this.taxonomyCode] || this.$taxonomies.defaultViewer || DefaultViewComponent
     }
 }
 </script>

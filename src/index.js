@@ -12,6 +12,7 @@ class Taxonomies {
         this.taxonomies = {}
         this.viewers = {}
         this.editors = {}
+        this.defaultViewer = null
     }
 
     addTaxonomy (code, title, url) {

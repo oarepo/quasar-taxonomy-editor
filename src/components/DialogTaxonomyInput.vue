@@ -10,7 +10,7 @@
                         <slot name="selected-item-multiple" v-bind:item="selected">
                             <slot name="selected-item" v-bind:item="selected">
                                 <slot name="item" v-bind:item="selected">
-                                    {{ selected.title}}
+                                    <component :is='viewComponent' :taxonomy-code="taxonomyCode" :term="selected"/>
                                 </slot>
                             </slot>
                         </slot>
@@ -20,7 +20,7 @@
                     <slot name="selected-item-single" v-bind:item="selected">
                         <slot name="selected-item" v-bind:item="selected">
                             <slot name="item" v-bind:item="selected">
-                                {{ selected.title}}
+                                <component :is='viewComponent' :taxonomy-code="taxonomyCode" :term="selected"/>
                             </slot>
                         </slot>
                     </slot>
@@ -54,7 +54,7 @@
                            title="Taxonomy up" v-if="parentTaxonomyUrl"></q-btn>
                     <div class="title q-mt-sm q-ml-md" v-if="subtree">
                         <slot name="title" v-bind:subtree="subtree">
-                            {{ subtree.title }}
+                            <component :is='viewComponent' :taxonomy-code="taxonomyCode" :term="subtree"/>
                         </slot>
                     </div>
                     <slot name="buttons-right"></slot>
@@ -78,9 +78,7 @@
                             <div class="col">
                                 <slot name="item" v-bind:item="node.data">
                                     <div class="node-text">
-                                        {{ node.data.title && (
-                                        node.data.title[$q.lang.getLocale()] || node.data.title._ || node.data.title)
-                                        }}
+                                        <component :is='viewComponent' :taxonomy-code="taxonomyCode" :term="node.data"/>
                                     </div>
                                 </slot>
                             </div>
@@ -100,6 +98,7 @@
 import { Component, Emit, Watch } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import { TaxonomyMixin } from './TaxonomyMixin'
+import DefaultViewComponent from './DefaultViewComponent.vue'
 
 export default @Component({
     props: {
@@ -203,6 +202,10 @@ class DialogTaxonomyInput extends mixins(TaxonomyMixin) {
             }
             return null
         }
+    }
+
+    get viewComponent () {
+        return this.$taxonomies.viewers[this.taxonomyCode] || this.$taxonomies.defaultViewer || DefaultViewComponent
     }
 }
 </script>
