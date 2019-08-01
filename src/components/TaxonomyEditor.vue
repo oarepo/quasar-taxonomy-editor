@@ -36,9 +36,8 @@
                         <slot :name="`item-${taxonomyCode || 'default'}`" v-bind:item="node.data">
                             <slot name="item" v-bind:item="node.data">
                                 <div class="node-text">
-                                    {{ node.data.title && (
-                                    node.data.title[$q.lang.getLocale()] || node.data.title._ || node.data.title)
-                                    }}
+                                    <component :is="viewComponent(taxonomyCode)" :taxonomy-code="taxonomyCode"
+                                               :term="node.data"></component>
                                 </div>
                             </slot>
                         </slot>
@@ -64,6 +63,7 @@ import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import DefaultEditDialogComponent from './DefaultEditDialogComponent.vue'
 import { TaxonomyMixin } from './TaxonomyMixin'
+import DefaultViewComponent from './DefaultViewComponent.vue'
 
 export default @Component({
     name: 'taxonomy-editor',
@@ -86,7 +86,7 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
 
     editNode (node) {
         this.$q.dialog({
-            component: this.editDialogComponent || DefaultEditDialogComponent,
+            component: this.editComponent,
             taxonomyNode: node.data,
             persistent: true
         }).onOk(data => {
@@ -112,7 +112,7 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
 
     addChildNode (node) {
         this.$q.dialog({
-            component: this.editDialogComponent || DefaultEditDialogComponent,
+            component: this.editComponent,
             persistent: true
         }).onOk(data => {
             this.$axios.post(node.data.links.self, data).then(data => {
@@ -125,7 +125,7 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
 
     addNode () {
         this.$q.dialog({
-            component: this.editDialogComponent || DefaultEditDialogComponent,
+            component: this.editComponent,
             persistent: true
         }).onOk(data => {
             this.$axios.post(this.localTaxonomyUrl, data).then(data => {
@@ -133,6 +133,10 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
                 this.$refs.tree.append({ data: data.data })
             })
         })
+    }
+
+    get editComponent () {
+        return this.editDialogComponent || this.$taxonomies.editors[this.taxonomyCode] || DefaultEditDialogComponent
     }
 
     dragStart (node) {
@@ -152,6 +156,10 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
         }).then(resp => {
             console.log('Dragging finished', resp)
         })
+    }
+
+    viewComponent (taxonomyCode) {
+        return this.$taxonomies.viewers[taxonomyCode] || DefaultViewComponent
     }
 }
 </script>

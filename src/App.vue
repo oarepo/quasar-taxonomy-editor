@@ -3,10 +3,8 @@
     <div class="row q-pa-xl justify-center">
         <q-card class="col-6">
             <q-card-section class="row">
-                <q-select :options="taxonomies" v-model='selectedTaxonomy' class="col" option-label="code">
-                    <!--                    <template v-slot:selected>-->
-                    <!--                        {{ selectedTaxonomy.code }}-->
-                    <!--                    </template>-->
+                <q-select :options="Object.keys(taxonomies)" :value='selectedTaxonomyCode' @input='changeTaxonomy'
+                          class="col">
                 </q-select>
                 <q-btn flat @click="newTaxonomy">New taxonomy</q-btn>
             </q-card-section>
@@ -61,6 +59,8 @@
 import { Component, Vue } from 'vue-property-decorator'
 import TaxonomyEditor from './components/TaxonomyEditor.vue'
 import DialogTaxonomyInput from './components/DialogTaxonomyInput.vue'
+import TestViewComponent from './TestViewComponent.vue'
+import TestEditComponent from './TestEditComponent.vue'
 
 export default @Component({
     name: 'App',
@@ -75,16 +75,16 @@ class App extends Vue {
     testShown = false
     selectedTaxonomyTerm = null
     selectedTaxonomyTermList = []
+    selectedTaxonomyCode = null
 
     mounted () {
-        this.loadTaxonomies()
-    }
-
-    loadTaxonomies () {
-        this.$axios.get('/api/taxonomies/').then(data => {
-            this.taxonomies = data.data
-            if (this.taxonomies.length > 0) {
-                this.selectedTaxonomy = this.taxonomies[0]
+        this.$taxonomies.loadTaxonomies('/api/taxonomies').then(taxonomies => {
+            this.taxonomies = taxonomies
+            if (this.taxonomies) {
+                const firstCode = Object.keys(this.taxonomies)[0]
+                this.$taxonomies.addViewer(firstCode, TestViewComponent)
+                this.$taxonomies.addEditor(firstCode, TestEditComponent)
+                this.changeTaxonomy(firstCode)
             }
         })
     }
@@ -97,6 +97,16 @@ class App extends Vue {
                 extra_data: {}
             }).then(data => {
                 this.loadTaxonomies()
+            })
+        }
+    }
+
+    changeTaxonomy (val) {
+        this.selectedTaxonomyCode = val
+        if (val) {
+            this.selectedTaxonomy = null
+            this.$nextTick(() => {
+                this.selectedTaxonomy = this.taxonomies[val]
             })
         }
     }
