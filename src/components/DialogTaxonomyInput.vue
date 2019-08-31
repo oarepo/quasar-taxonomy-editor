@@ -1,6 +1,7 @@
 <template>
 <div>
-    <q-field :label="label" stack-label @click.native.stop="showSelectionDialog()">
+    <q-field :label="label" :value="this.selectedTerms" :rules="this.rules" :lazy-rules="lazyRules" stack-label
+             @click.native.stop="showSelectionDialog()" ref="field">
         <template v-slot:control>
         <div class="self-center full-width no-outline" tabindex="0">
             <div :class="{'inline-term': inline}" v-for="selected in selectedTerms" :key="selected.links.self">
@@ -105,7 +106,9 @@ export default @Component({
         label: String,
         inline: Boolean,
         multiple: Boolean,
-        value: [Object, Array]
+        value: [Object, Array],
+        rules: Array,
+        lazyRules: Array
     }
 })
 class DialogTaxonomyInput extends mixins(TaxonomyMixin) {
@@ -123,6 +126,9 @@ class DialogTaxonomyInput extends mixins(TaxonomyMixin) {
 
     mounted () {
         this.setInitialValue()
+        this.$nextTick(() => {
+            this.$refs.field.resetValidation()
+        })
     }
 
     @Watch('value')
@@ -206,6 +212,14 @@ class DialogTaxonomyInput extends mixins(TaxonomyMixin) {
 
     get viewComponent () {
         return this.$taxonomies.viewers[this.taxonomyCode] || this.$taxonomies.defaultViewer || DefaultViewComponent
+    }
+
+    validate (val) {
+        return this.$refs.field.validate(val)
+    }
+
+    get error () {
+        return this.$refs.field.error
     }
 }
 </script>

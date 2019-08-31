@@ -1,12 +1,12 @@
 {
     "name": "@oarepo/vue-taxonomy-editor",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "main": "index.esm.js",
     "description": "Vue/Quasar taxonomy editor",
     "productName": "Vue/Quasar taxonomy editor",
     "cordovaId": "org.oarepo.vue_taxonomy_editor",
     "author": "bauer@cesnet.cz",
-    "private": true,
+    "private": false,
     "scripts": {
         "lint": "eslint --ext .js,.vue src",
         "test": "echo \"No test specified\" && exit 0",
