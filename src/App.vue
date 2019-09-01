@@ -30,6 +30,7 @@
                                            v-model="selectedTaxonomyTerm"
                                            :taxonomyCode="selectedTaxonomy.code"
                                            :taxonomyUrl="selectedTaxonomy.links.tree"
+                                           :rules="rules"
                     ></dialog-taxonomy-input>
                     <br>
                     Value: <span v-if="selectedTaxonomyTerm">{{ selectedTaxonomyTerm.title }}</span>
@@ -42,6 +43,7 @@
                                            :taxonomyCode="selectedTaxonomy.code"
                                            :taxonomyUrl="selectedTaxonomy.links.tree"
                                            :multiple="true"
+                                           :rules="arrayRules"
                     ></dialog-taxonomy-input>
                     <br>
                     Value:
@@ -76,6 +78,17 @@ class App extends Vue {
     selectedTaxonomyTerm = null
     selectedTaxonomyTermList = []
     selectedTaxonomyCode = null
+
+    rules = [
+        x => {
+            console.log('Validating', x)
+            return !!x || 'This field is required'
+        }
+    ]
+
+    arrayRules = [
+        x => !!x.length || 'This field is required'
+    ]
 
     mounted () {
         this.$taxonomies.loadTaxonomies('/api/taxonomies').then(taxonomies => {

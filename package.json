@@ -1,6 +1,6 @@
 {
     "name": "@oarepo/vue-taxonomy-editor",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "main": "index.esm.js",
     "description": "Vue/Quasar taxonomy editor",
     "productName": "Vue/Quasar taxonomy editor",

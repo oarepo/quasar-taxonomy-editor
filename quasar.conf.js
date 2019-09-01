@@ -96,7 +96,7 @@ module.exports = function (ctx) {
 
         devServer: {
             https: true,
-            port: 8090,
+            port: 8080,
             open: false, // opens browser window automatically
             proxy: {
                 '/api': {

@@ -1,6 +1,6 @@
 <template>
 <div>
-    <q-field :label="label" :value="this.selectedTerms" :rules="this.rules" :lazy-rules="lazyRules" stack-label
+    <q-field :label="label" :value="internalValidationValue" :rules="this.rules" :lazy-rules="lazyRules" stack-label
              @click.native.stop="showSelectionDialog()" ref="field">
         <template v-slot:control>
         <div class="self-center full-width no-outline" tabindex="0">
@@ -37,62 +37,6 @@
                v-if="multiple || !selectedTerms.length"/>
         </template>
     </q-field>
-    <q-dialog v-model="selectorShown">
-        <q-card style="width: 700px; max-width: 80vw; height: 80vw">
-            <q-card-section>
-
-            </q-card-section>
-            <q-card-section>
-                <div class="buttons row">
-                    <slot name="buttons-left"></slot>
-                    <q-btn icon="expand_more" flat color="primary" dense @click="$refs.tree.findAll({}).expand()"
-                           title="expand all"></q-btn>
-                    <q-btn icon="expand_less" flat color="primary" dense @click="$refs.tree.findAll({}).collapse()"
-                           title="collapse all"></q-btn>
-                    <slot name="buttons-middle"></slot>
-                    <q-btn icon="subdirectory_arrow_left" class="rotate-90" flat color="primary" dense
-                           @click="taxonomyUp()"
-                           title="Taxonomy up" v-if="parentTaxonomyUrl"></q-btn>
-                    <div class="title q-mt-sm q-ml-md" v-if="subtree">
-                        <slot name="title" v-bind:subtree="subtree">
-                            <component :is='viewComponent' :taxonomy-code="taxonomyCode" :term="subtree"/>
-                        </slot>
-                    </div>
-                    <slot name="buttons-right"></slot>
-                    <q-space/>
-                    <q-input v-model="filter" dense class="q-mr-lg">
-                        <template v-slot:append>
-                        <q-icon v-if="filter !== ''" name="close" @click="filter = ''" class="cursor-pointer"/>
-                        <q-icon name="search"/>
-                        </template>
-                    </q-input>
-                    <q-btn icon="check" flat color="primary" @click="multipleValuesSelected" v-if="multiple">&nbsp;OK
-                    </q-btn>
-                </div>
-                <q-separator></q-separator>
-                <tree :data="data" :options="opts" :filter="filter"
-                      @node:clicked="singleValueSelectedClick"
-                      @node:checked="singleValueSelected"
-                      ref="tree" v-if="dataReady">
-                    <div slot-scope=" { node } " class="node-container full-width">
-                        <div class="row">
-                            <div class="col">
-                                <slot name="item" v-bind:item="node.data">
-                                    <div class="node-text">
-                                        <component :is='viewComponent' :taxonomy-code="taxonomyCode" :term="node.data"/>
-                                    </div>
-                                </slot>
-                            </div>
-                            <div class="node-controls">
-                                <q-btn href="#" @click.stop="openTaxonomy(node)" flat icon="fullscreen" size="sm"
-                                       color="primary" v-if="node.data.descendants_count>0"></q-btn>
-                            </div>
-                        </div>
-                    </div>
-                </tree>
-            </q-card-section>
-        </q-card>
-    </q-dialog>
 </div>
 </template>
 <script>
@@ -100,6 +44,7 @@ import { Component, Emit, Watch } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import { TaxonomyMixin } from './TaxonomyMixin'
 import DefaultViewComponent from './DefaultViewComponent.vue'
+import DialogTaxonomyInputDialog from './DialogTaxonomyInputDialog.vue'
 
 export default @Component({
     props: {
@@ -113,7 +58,6 @@ export default @Component({
 })
 class DialogTaxonomyInput extends mixins(TaxonomyMixin) {
     selectedTerms = []
-    selectorShown = false
     filter = ''
 
     get opts () {
@@ -127,8 +71,18 @@ class DialogTaxonomyInput extends mixins(TaxonomyMixin) {
     mounted () {
         this.setInitialValue()
         this.$nextTick(() => {
-            this.$refs.field.resetValidation()
+            this.resetValidation()
         })
+    }
+
+    resetValidation () {
+        if (this.$refs.field) {
+            this.$refs.field.resetValidation()
+        } else {
+            this.$nextTick(() => {
+                this.resetValidation()
+            })
+        }
     }
 
     @Watch('value')
@@ -151,50 +105,25 @@ class DialogTaxonomyInput extends mixins(TaxonomyMixin) {
     showSelectionDialog () {
         this.loadTaxonomy().then(() => {
             this.selectorShown = true
-            this.$nextTick(() => {
-                setTimeout(() => {
-                    if (this.multiple && this.selectedTerms) {
-                        this.selectedTerms.forEach(term => {
-                            const selection = this.$refs.tree.find({ data: { id: term.id } })
-                            if (selection) {
-                                selection.check()
-                            }
-                        })
-                    }
-                }, 10)
+            this.$q.dialog({
+                component: DialogTaxonomyInputDialog,
+                value: this.selectedTerms,
+                taxonomyUrl: this.taxonomyUrl,
+                taxonomyCode: this.taxonomyCode,
+                filterMatcher: this.filterMatcher,
+                multiple: this.multiple
+            }).onOk(terms => {
+                console.log('selected terms', terms)
+                this.selectedTerms = terms
+                this.validate()
+                this.emit()
             })
         })
     }
 
-    singleValueSelectedClick (term) {
-        if (term.children.length > 0) {
-            return
-        }
-        this.singleValueSelected(term)
-    }
-
-    singleValueSelected (term) {
-        if (this.multiple) {
-            return
-        }
-        this.selectorShown = false
-        this.selectedTerms = [term.data]
-        this.emit()
-    }
-
-    multipleValuesSelected () {
-        const foundTerms = this.$refs.tree.findAll({ state: { checked: true } })
-        if (foundTerms !== null) {
-            this.selectedTerms = foundTerms.map(x => x.data)
-        } else {
-            this.selectedTerms = []
-        }
-        this.selectorShown = false
-        this.emit()
-    }
-
     removeSelected (term) {
         this.selectedTerms = this.selectedTerms.filter(x => x.links.self !== term.links.self)
+        this.validate()
         this.emit()
     }
 
@@ -212,6 +141,16 @@ class DialogTaxonomyInput extends mixins(TaxonomyMixin) {
 
     get viewComponent () {
         return this.$taxonomies.viewers[this.taxonomyCode] || this.$taxonomies.defaultViewer || DefaultViewComponent
+    }
+
+    get internalValidationValue () {
+        if (this.multiple) {
+            return this.selectedTerms
+        }
+        if (this.selectedTerms.length) {
+            return this.selectedTerms[0]
+        }
+        return null
     }
 
     validate (val) {
