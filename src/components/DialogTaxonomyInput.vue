@@ -113,18 +113,15 @@ class DialogTaxonomyInput extends mixins(TaxonomyMixin) {
                 filterMatcher: this.filterMatcher,
                 multiple: this.multiple
             }).onOk(terms => {
-                console.log('selected terms', terms)
                 this.selectedTerms = terms
-                this.validate()
-                this.emit()
+                this.validateAndEmit()
             })
         })
     }
 
     removeSelected (term) {
         this.selectedTerms = this.selectedTerms.filter(x => x.links.self !== term.links.self)
-        this.validate()
-        this.emit()
+        this.validateAndEmit()
     }
 
     @Emit('input')
@@ -155,6 +152,14 @@ class DialogTaxonomyInput extends mixins(TaxonomyMixin) {
 
     validate (val) {
         return this.$refs.field.validate(val)
+    }
+
+    validateAndEmit () {
+        Promise.resolve(this.validate()).then(status => {
+            if (status) {
+                this.emit()
+            }
+        })
     }
 
     get error () {
