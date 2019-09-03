@@ -155,10 +155,14 @@ class DialogTaxonomyInput extends mixins(TaxonomyMixin) {
     }
 
     validateAndEmit () {
-        Promise.resolve(this.validate()).then(status => {
-            if (status) {
-                this.emit()
-            }
+        this.$nextTick(() => {
+            // validate and emit in the next tick as the selectedTerms has to propagate to qfield in order
+            // to be validated
+            Promise.resolve(this.validate()).then(status => {
+                if (status) {
+                    this.emit()
+                }
+            })
         })
     }
 
