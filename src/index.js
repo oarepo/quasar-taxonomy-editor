@@ -6,6 +6,7 @@
 import TaxonomyEditor from './components/TaxonomyEditor.vue'
 import DialogTaxonomyInput from './components/DialogTaxonomyInput.vue'
 import axios from 'axios'
+import { reject } from 'q'
 
 class Taxonomies {
     constructor () {
@@ -27,13 +28,18 @@ class Taxonomies {
     }
 
     async loadTaxonomies (url) {
-        const resp = await axios.get(url)
         this.taxonomies = {
             ...this.taxonomies
         }
-        resp.data.forEach(x => {
-            this.taxonomies[x.code] = x
-        })
+        await axios.get(url)
+            .then((resp) => {
+                resp.data.forEach(x => {
+                    this.taxonomies[x.code] = x
+                })
+            })
+            .catch((err) => {
+                console.log(err)
+            })
         return this.taxonomies
     }
 
