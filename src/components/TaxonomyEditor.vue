@@ -27,6 +27,7 @@
 
         </div>
         <tree :data="data" :options="opts" :filter="filter" ref="tree"
+              @tree:mounted="onTreeMounted"
               @node:dragging:start="dragStart"
               @node:dragging:finish="dragFinish"
               v-if="dataReady"
@@ -60,7 +61,7 @@
 </template>
 
 <script>
-import { Component } from 'vue-property-decorator'
+import { Component, Watch } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import DefaultEditDialogComponent from './DefaultEditDialogComponent.vue'
 import { TaxonomyMixin } from './TaxonomyMixin'
@@ -74,6 +75,20 @@ export default @Component({
 })
 class TaxonomyEditor extends mixins(TaxonomyMixin) {
     filter = ''
+    treeSort = {
+        recursive: false,
+        order: 'asc',
+    }
+
+    @Watch('treeSort.order')
+    changeTreeOrder () {
+        this.sortTree()
+    }
+
+    @Watch('treeSort.recursive')
+    changeTreeRecursiveSort () {
+        this.sortTree()
+    }
 
     get opts () {
         return {
@@ -85,6 +100,27 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
         }
     }
 
+    onTreeMounted () {
+        window.t = this.$refs.tree
+        this.sortTree()
+    }
+
+    titleSort (node0, node1) {
+        let r = (node0.data.slug < node1.data.slug)
+        let p = this.treeSort.order === 'asc' ? 1 : -1
+        if (!r) {
+            return p
+        }
+        return -p
+    }
+
+    sortTree () {
+        this.$refs.tree.sortTree(
+            this.titleSort,
+            this.treeSort.recursive
+        )
+    }
+
     editNode (node) {
         this.$q.dialog({
             component: this.editComponent,
@@ -93,9 +129,9 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
         }).onOk(data => {
             this.$axios.patch(node.data.links.self, data).then(data => {
                 node.data = data.data
+                this.sortTree()
             })
         })
-        console.log(node)
     }
 
     removeNode (node) {
@@ -107,6 +143,7 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
         }).onOk(() => {
             this.$axios.delete(node.data.links.self).then(() => {
                 node.remove()
+                this.sortTree()
             })
         })
     }
@@ -120,6 +157,7 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
                 // add to the child node
                 this.$refs.tree.append(node, { data: data.data })
                 node.expand()
+                this.sortTree()
             })
         })
     }
@@ -132,6 +170,7 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
             this.$axios.post(this.localTaxonomyUrl, data).then(data => {
                 // add the node top-level
                 this.$refs.tree.append({ data: data.data })
+                this.sortTree()
             })
         })
     }
