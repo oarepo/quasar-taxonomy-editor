@@ -77,7 +77,7 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
     filter = ''
     treeSort = {
         recursive: false,
-        order: 'asc',
+        order: 'asc'
     }
 
     @Watch('treeSort.order')
@@ -144,6 +144,20 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
             this.$axios.delete(node.data.links.self).then(() => {
                 node.remove()
                 this.sortTree()
+            }).catch(error => {
+                if (error.response.status === 409) {
+                    const recnum = error.response.data.message.records.length
+                    console.log(recnum)
+                    this.$q.notify({
+                        message: `Tento pojem je použit ve ${recnum} existujících záznamech.` +
+                            'Odeberte jej prosím nejdříve z těchto záznamů',
+                        color: 'red',
+                        position: 'center',
+                        icon: 'block'
+                    })
+                } else {
+                    console.log('failed to delete term')
+                }
             })
         })
     }
