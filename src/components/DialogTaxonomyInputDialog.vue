@@ -73,6 +73,26 @@ export default @Component({
 class DialogTaxonomyInputDialog extends mixins(TaxonomyMixin) {
     selectedTerms = []
     filter = ''
+    treeSort = {
+        recursive: false,
+        order: 'asc'
+    }
+
+    titleSort (node0, node1) {
+        let r = (node0.data.slug < node1.data.slug)
+        let p = this.treeSort.order === 'asc' ? 1 : -1
+        if (!r) {
+            return p
+        }
+        return -p
+    }
+
+    sortTree () {
+        this.$refs.tree.sortTree(
+            this.titleSort,
+            this.treeSort.recursive
+        )
+    }
 
     @Watch('value')
     valueChanged () {
@@ -104,6 +124,7 @@ class DialogTaxonomyInputDialog extends mixins(TaxonomyMixin) {
     }
 
     onDialogShow () {
+        this.sortTree()
         if (this.multiple && this.selectedTerms) {
             this.selectedTerms.forEach(term => {
                 const selection = this.$refs.tree.find({ data: { id: term.id } })
