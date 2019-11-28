@@ -106,13 +106,7 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
     }
 
     titleSort (node0, node1) {
-        // TODO: take locale into account
-        let r = (node0.data.title[0].value < node1.data.title[0].value)
-        let p = this.treeSort.order === 'asc' ? 1 : -1
-        if (!r) {
-            return p
-        }
-        return -p
+        return new Intl.Collator(node0.data.title[0].lang).compare(node0.data.title[0].value, node1.data.title[0].value)
     }
 
     sortTree () {
