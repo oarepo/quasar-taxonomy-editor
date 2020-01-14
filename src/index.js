@@ -6,7 +6,6 @@
 import TaxonomyEditor from './components/TaxonomyEditor.vue'
 import DialogTaxonomyInput from './components/DialogTaxonomyInput.vue'
 import axios from 'axios'
-import { reject } from 'q'
 
 class Taxonomies {
     constructor () {
