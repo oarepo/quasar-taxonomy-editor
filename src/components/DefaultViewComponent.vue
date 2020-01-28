@@ -16,5 +16,7 @@ class DefaultViewComponent extends Vue {
 }
 </script>
 <style>
-
+.tree-checkbox.disabled {
+    background-color: gray;
+}
 </style>

@@ -42,6 +42,9 @@ class TaxonomyMixin extends Vue {
                 x.children = this.processData(x.children)
             }
             x.data = { ...x }
+            if (x.data.selectable !== undefined) {
+                x.state = { selectable: x.data.selectable }
+            }
             delete x.data.children
             return x
         })
@@ -71,7 +74,6 @@ class TaxonomyMixin extends Vue {
                         this.parentTaxonomyUrl = null
                         this.subtree = null
                     } else {
-                        console.log(data.data)
                         this.parentTaxonomyUrl = data.data.links.parent_tree || null
                         this.data = this.processData(data.data.children)
                         this.subtree = data.data
