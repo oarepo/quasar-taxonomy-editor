@@ -110,10 +110,12 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
     }
 
     sortTree () {
-        this.$refs.tree.sortTree(
-            this.titleSort,
-            this.treeSort.recursive
-        )
+        if (this.$refs.tree) {
+            this.$refs.tree.sortTree(
+                this.titleSort,
+                this.treeSort.recursive
+            )
+        }
     }
 
     editNode (node) {

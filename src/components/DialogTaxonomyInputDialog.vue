@@ -83,14 +83,17 @@ class DialogTaxonomyInputDialog extends mixins(TaxonomyMixin) {
     }
 
     sortTree () {
-        this.$refs.tree.sortTree(
-            this.titleSort,
-            this.treeSort.recursive
-        )
+        if (this.$refs.tree) {
+            this.$refs.tree.sortTree(
+                this.titleSort,
+                this.treeSort.recursive
+            )
+        }
     }
 
     @Watch('value')
     valueChanged () {
+        this.sortTree()
         this.selectedTerms = this.value || []
     }
 
@@ -161,11 +164,13 @@ class DialogTaxonomyInputDialog extends mixins(TaxonomyMixin) {
     }
 
     multipleValuesSelected () {
-        const foundTerms = this.$refs.tree.findAll({ state: { checked: true } })
-        if (foundTerms !== null) {
-            this.selectedTerms = foundTerms.map(x => x.data)
-        } else {
-            this.selectedTerms = []
+        if (this.$refs.tree) {
+            const foundTerms = this.$refs.tree.findAll({state: {checked: true}})
+            if (foundTerms !== null) {
+                this.selectedTerms = foundTerms.map(x => x.data)
+            } else {
+                this.selectedTerms = []
+            }
         }
         this.onOKClick()
     }
