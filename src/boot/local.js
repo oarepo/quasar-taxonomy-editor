@@ -30,7 +30,9 @@ export default async ({ Vue }) => {
         },
         termPermissions: (taxonomy, term) => {
             if (!term) {
-                return []
+                return [
+                    'insert'
+                ]
             }
             const ret = ['edit']
             if (term.level > 1) {

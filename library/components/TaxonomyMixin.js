@@ -84,7 +84,7 @@ class TaxonomyMixin extends Vue {
         this.loadTaxonomy()
     }
 
-    openTaxonomy (term) {
+    openTaxonomy ({ term, node }) {
         this.taxonomyTermStack.push(term)
         this.taxonomyUrlStack.push(term.links.self)
         this.pageStack.push(this.page)
@@ -122,6 +122,10 @@ class TaxonomyMixin extends Vue {
         } else {
             this.loadTaxonomy()
         }
+    }
+
+    get maxPage () {
+        return Math.ceil(this.total / (this.size || 1))
     }
 }
 

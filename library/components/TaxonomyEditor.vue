@@ -24,7 +24,7 @@
                    title="collapse all"></q-btn>
             <slot name="buttons-middle"></slot>
             <q-btn @click="addNode" icon="add" flat dense color="positive" class="print-hide"
-                v-if="$taxonomies.termPermissions(taxonomyCode).includes('insert')"
+                   v-if="$taxonomies.termPermissions(taxonomyCode).includes('insert')"
             ></q-btn>
             <slot name="buttons-right"></slot>
             <q-space/>
@@ -67,8 +67,8 @@
             </div>
         </tree>
         <div class="row justify-around">
-            <q-pagination v-model="page" :max="Math.ceil(total / (size || 1))" :direction-links="true" :max-pages="6"
-                          class="paginator"></q-pagination>
+            <q-pagination v-model="page" :max="maxPage" :direction-links="true" :max-pages="6"
+                          class="paginator" v-if="maxPage > 1"></q-pagination>
         </div>
     </div>
 </div>
@@ -114,7 +114,7 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
         // this.sortTree()
     }
 
-    editTerm (term) {
+    editTerm ({ term, node }) {
         this.$q.dialog({
             component: this.getTermEditComponent({ term: term }),
             parent: this,
@@ -127,7 +127,7 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
         })
     }
 
-    removeNode (term) {
+    removeNode ({ term, node }) {
         this.$q.dialog({
             title: 'Deleting taxonomy term',
             message: 'Do you really want to delete taxonomy term?',
@@ -135,11 +135,10 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
             persistent: true
         }).onOk(() => {
             this.$axios.delete(term.links.self).then(() => {
-                term._node.remove()
+                node.remove()
             }).catch(error => {
                 if (error.response.status === 409) {
                     const recnum = error.response.data.message.records.length
-                    console.log(recnum)
                     this.$q.notify({
                         message: `Tento pojem je použit ve ${recnum} existujících záznamech.` +
                             'Odeberte jej prosím nejdříve z těchto záznamů',
@@ -154,18 +153,28 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
         })
     }
 
-    addChildNode (term) {
+    _onAddError (reason) {
+        console.log(reason)
+        if (reason.response) {
+            if (reason.response.status === 412) {
+                alert('Resource already exists')
+            } else {
+                alert('Taxonomy error: ' + reason.response.data)
+            }
+        }
+    }
+
+    addChildNode ({ term, node }) {
         this.$q.dialog({
             component: this.getTermEditComponent({ parent: term }),
             parent: this,
             parentTerm: term,
             persistent: true
         }).onOk(data => {
-            this.$axios.post(term.links.self, data).then(data => {
-                // add to the child node
-                this.$refs.tree.append(term._node, { data: data.data })
-                term._node.expand()
-            })
+            this.$taxonomies.addChild({ term, child: data }).then(child => {
+                this.$refs.tree.prepend(node, { data: child })
+                node.expand()
+            }).catch(reason => this._onAddError(reason))
         })
     }
 
@@ -175,10 +184,13 @@ class TaxonomyEditor extends mixins(TaxonomyMixin) {
             parent: this,
             persistent: true
         }).onOk(data => {
-            this.$axios.post(this.localTaxonomyUrl, data).then(data => {
+            this.$taxonomies.addChild({
+                url: this.localTaxonomyUrl || this.$taxonomies.taxonomyUrl(this.taxonomyCode),
+                child: data
+            }).then(child => {
                 // add the node top-level
-                this.$refs.tree.append({ data: data.data })
-            })
+                this.$refs.tree.prepend({ data: child })
+            }).catch(reason => this._onAddError(reason))
         })
     }
 

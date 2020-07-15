@@ -51,6 +51,7 @@ class ContinentEditComponent extends Vue {
 
     onOKClick () {
         this.$emit('ok', {
+            slug: this.title,
             ...(this.term || {}),
             title: this.title,
             description: this.description

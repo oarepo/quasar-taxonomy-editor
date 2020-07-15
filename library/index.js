@@ -61,7 +61,11 @@ class Taxonomies {
     }
 
     async loadTaxonomy (code) {
-        return (await axios.get(`${this.taxonomiesUrl}${code}`)).data
+        return (await axios.get(this.taxonomyUrl(code))).data
+    }
+
+    taxonomyUrl (code) {
+        return `${this.taxonomiesUrl}${code}`
     }
 
     async loadTaxonomyPage ({ code, page, size, url, filter }) {
@@ -78,6 +82,28 @@ class Taxonomies {
             terms: ret.data,
             total: ret.headers['x-total']
         }
+    }
+
+    async addChild ({ term = undefined, url = undefined, child }) {
+        if (!url) {
+            url = `${term.links.self}?representation:include=dsc,slug,dcn,drl,lvl`
+        } else {
+            if (url.indexOf('?') >= 0) {
+                url += '&'
+            } else {
+                url += '?'
+            }
+            url += 'representation:include=dsc,slug,dcn,drl,lvl'
+        }
+        const ret = await axios.post(url, child, {
+            headers: {
+                'If-None-Match': '*'
+            },
+            validateStatus: function (status) {
+                return status >= 200 && status < 300
+            }
+        })
+        return ret.data
     }
 
     addViewer (code, viewer) {
