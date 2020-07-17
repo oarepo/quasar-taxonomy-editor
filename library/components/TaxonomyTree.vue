@@ -17,11 +17,23 @@
         <div class="q-mr-md row q-py-xs">
             <q-separator vertical spaced color="secondary" v-if="hasParent"></q-separator>
         </div>
-        <q-btn icon="expand_more" flat color="primary" dense @click="$refs.tree.findAll({}).expand()"
+        <q-btn icon="expand_more" flat color="primary" dense @click="expand"
                title="expand all"></q-btn>
-        <q-btn icon="expand_less" flat color="primary" dense @click="$refs.tree.findAll({}).collapse()"
+        <q-btn icon="expand_less" flat color="primary" dense
+               @click="collapse"
                title="collapse all"></q-btn>
+        <q-btn icon="refresh" flat color="primary" dense @click="loadTaxonomy"
+               title="refresh"></q-btn>
+        <q-btn flat color="primary" dense @click="singleLevel = !singleLevel; loadTaxonomy()"
+               title="list/hierarchy">
+            <q-icon name="view_headline" v-if="singleLevel"></q-icon>
+            <q-icon name="vertical_split" class="rotate-180" v-else></q-icon>
+        </q-btn>
         <slot name="buttons-middle" v-bind:parentUrl="parentUrl"></slot>
+        <q-space/>
+        <q-pagination v-model="page" :max="maxPage" :direction-links="true" :max-pages="6"
+                      class="paginator order-md-last" v-if="maxPage > 1" color="secondary"></q-pagination>
+        <q-space/>
         <slot name="buttons-right" v-bind:parentUrl="parentUrl"></slot>
         <q-space/>
         <q-input v-model="filter" dense class="q-mr-lg print-hide" @keyup.enter="search()">
@@ -30,9 +42,14 @@
             <q-icon name="search"/>
             </template>
         </q-input>
+        <slot name="buttons-end" v-bind:parentUrl="parentUrl"></slot>
     </div>
+    <slot name="after-header" v-bind:parentUrl="parentUrl"></slot>
     <tree :data="data" :options="treeOptions" ref="tree"
           v-if="dataReady"
+          @node:clicked="$emit('clicked', $event.data)"
+          @node:checked="$emit('selected', $event.data)"
+          @node:unchecked="$emit('unselected', $event.data)"
     >
         <div slot-scope=" { node } " class="node-container full-width">
             <div class="row">
@@ -58,10 +75,6 @@
             </div>
         </div>
     </tree>
-    <div class="row justify-around">
-        <q-pagination v-model="page" :max="maxPage" :direction-links="true" :max-pages="6"
-                      class="paginator" v-if="maxPage > 1"></q-pagination>
-    </div>
 </div>
 </template>
 
@@ -83,6 +96,10 @@ export default @Component({
                 checkbox: false,
                 dnd: false
             })
+        },
+        initialSize: {
+            type: Number,
+            default: 50
         }
     }
 })
@@ -95,8 +112,9 @@ class TaxonomyTree extends Vue {
     taxonomyTermStack = []
     pageStack = []
     page = 1
-    size = 50
+    size = 0
     total = 0
+    singleLevel = false
 
     getTermViewComponent (term) {
         return this.$taxonomies.getTermViewComponent({
@@ -106,6 +124,7 @@ class TaxonomyTree extends Vue {
     }
 
     mounted () {
+        this.size = this.initialSize
         this.loadTaxonomy()
     }
 
@@ -129,7 +148,8 @@ class TaxonomyTree extends Vue {
             page: this.page,
             size: this.size,
             url: this.localTaxonomyUrl,
-            filter: this.activatedFilter
+            filter: this.activatedFilter,
+            levels: this.singleLevel ? 1 : undefined
         }).then(({ terms, total }) => {
             // terms starts with taxonomy node
             this.data = this.processData(terms.children)
@@ -138,9 +158,16 @@ class TaxonomyTree extends Vue {
             this.$nextTick(() => {
                 this.dataReady = true
                 if (this.startExpanded) {
-                    setTimeout(() => {
+                    this.later(() => {
                         this.$refs.tree.findAll({}).expand()
-                    }, 0)
+                        this.$emit('loaded', {
+                            tree: this,
+                            page: this.page,
+                            terms: terms,
+                            total: this.total,
+                            size: this.size
+                        })
+                    })
                 }
             })
         })
@@ -155,8 +182,11 @@ class TaxonomyTree extends Vue {
         this.taxonomyTermStack.push(term)
         this.taxonomyUrlStack.push(term.links.self)
         this.pageStack.push(this.page)
-        this.page = 1
-        this.loadTaxonomy()
+        if (this.page !== 1) {
+            this.page = 1 // no need to reload as it is automatic on page change
+        } else {
+            this.loadTaxonomy()
+        }
     }
 
     taxonomyUp () {
@@ -203,6 +233,46 @@ class TaxonomyTree extends Vue {
     prepend (...params) {
         const node = this.$refs.tree.prepend(...params)
         node.select()
+    }
+
+    check (terms) {
+        terms.forEach(term => {
+            const selection = this.$refs.tree.find({ data: { slug: term.slug } })
+            if (selection) {
+                selection.check()
+            }
+        })
+        this.$refs.tree.checked().forEach(node => {
+            if (!terms.includes(node.data)) {
+                node.uncheck()
+            }
+        })
+    }
+
+    later (f) {
+        const self = this
+        const cnt = []
+
+        function l () {
+            if (!self.$refs || !self.$refs.tree) {
+                if (cnt.length < 5) {
+                    cnt.push(1)
+                    setTimeout(l, 100 * cnt.length)
+                }
+            } else {
+                f()
+            }
+        }
+
+        setTimeout(l, 0)
+    }
+
+    expand () {
+        this.later(() => this.$refs.tree.findAll({}).expand())
+    }
+
+    collapse () {
+        this.later(() => this.$refs.tree.findAll({}).collapse())
     }
 }
 </script>

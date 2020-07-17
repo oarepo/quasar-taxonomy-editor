@@ -68,11 +68,14 @@ class Taxonomies {
         return `${this.taxonomiesUrl}${code}`
     }
 
-    async loadTaxonomyPage ({ code, page, size, url, filter }) {
+    async loadTaxonomyPage ({ code, page, size, url, filter, levels }) {
         if (!url) {
             url = `${this.taxonomiesUrl}${code}?page=${page}&size=${size}&representation:include=dsc,anh,slug,dcn,drl,lvl`
         } else {
             url = `${url}?page=${page}&size=${size}&representation:include=dsc,anh,slug,dcn,drl,lvl`
+        }
+        if (levels) {
+            url = `${url}&representation:levels=${levels}`
         }
         if (filter) {
             url = `${url}&q=${encodeURIComponent(filter)}`

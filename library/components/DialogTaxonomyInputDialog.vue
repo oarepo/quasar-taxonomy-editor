@@ -1,115 +1,68 @@
 <template>
 <div>
-    <q-dialog ref="dialog" @hide="onDialogHide" @show="onDialogShow">
-        <q-card class="q-dialog-plugin" style="width: 700px; max-width: 80vw; height: 80vw">
-            <q-card-section>
-
+    <q-dialog ref="dialog" @hide="onDialogHide" @show="showSelectedTerms">
+        <q-card class="q-dialog-plugin" style="width: 700px; max-width: 80vw; ">
+            <q-card-section class="q-mt-lg">
+                <taxonomy-tree :taxonomy-code="taxonomyCode" :start-expanded="true" :tree-options="opts" ref="tree"
+                               @clicked="singleValueClick" @selected="valueSelected" @unselected="valueUnselected"
+                               @loaded="showSelectedTerms"
+                               :initial-size="10">
+                </taxonomy-tree>
             </q-card-section>
-            <q-card-section>
-                <div class="buttons row">
-                    <slot name="buttons-left"></slot>
-                    <q-btn icon="expand_more" flat color="primary" dense @click="$refs.tree.findAll({}).expand()"
-                           title="expand all"></q-btn>
-                    <q-btn icon="expand_less" flat color="primary" dense @click="$refs.tree.findAll({}).collapse()"
-                           title="collapse all"></q-btn>
-                    <slot name="buttons-middle"></slot>
-                    <q-btn icon="subdirectory_arrow_left" class="rotate-90" flat color="primary" dense
-                           @click="taxonomyUp()"
-                           title="Taxonomy up" v-if="parentTaxonomyUrl"></q-btn>
-                    <div class="title q-mt-sm q-ml-md" v-if="subtree">
-                        <slot name="title" v-bind:subtree="subtree">
-                            <component :is='viewComponent' :taxonomy-code="taxonomyCode" :term="subtree"/>
-                        </slot>
-                    </div>
-                    <slot name="buttons-right"></slot>
-                    <q-space/>
-                    <q-input v-model="filter" dense class="q-mr-lg">
-                        <template v-slot:append>
-                        <q-icon v-if="filter !== ''" name="close" @click="filter = ''" class="cursor-pointer"/>
-                        <q-icon name="search"/>
-                        </template>
-                    </q-input>
-                    <q-btn icon="check" flat color="primary" @click="multipleValuesSelected" v-if="multiple">&nbsp;OK
-                    </q-btn>
-                </div>
-                <q-separator></q-separator>
-                <tree :data="data" :options="opts" :filter="filter"
-                      @node:clicked="singleValueClick"
-                      @node:checked="singleValueSelected"
-                      ref="tree" v-if="dataReady">
-                    <div slot-scope=" { node } " class="node-container full-width">
-                        <div class="row">
-                            <div class="col">
-                                <slot name="item" v-bind:item="node.data">
-                                    <div class="node-text">
-                                        <component :is='viewComponent' :taxonomy-code="taxonomyCode" :term="node.data"/>
-                                    </div>
-                                </slot>
-                            </div>
-                            <div class="node-controls">
-                                <q-btn href="#" @click.stop="openTaxonomy(node)" flat icon="fullscreen" size="sm"
-                                       color="primary" v-if="node.data.descendants_count>0"></q-btn>
-                            </div>
+            <q-card-section v-if="multiple">
+                <div class="row items-end q-gutter-md">
+                    <q-field class="col" label="Selected" stack-label>
+                        <template v-slot:control>
+                        <div class="row items-end q-gutter-sm">
+                            <q-chip removable v-for="term in selectedTerms" :key="term.slug" color="primary" dark
+                                    @remove="valueUnselected(term, true)">
+                                {{ term.slug }}
+                            </q-chip>
                         </div>
-                    </div>
-                </tree>
+                        </template>
+                    </q-field>
+                </div>
             </q-card-section>
+            <q-card-actions align="right">
+                <q-btn @click="hide" flat color="grey">Cancel</q-btn>
+                <q-btn @click="onOKClick" flat color="positive" icon="done"  v-if="multiple"><span class="q-pl-sm">Ok</span>
+                </q-btn>
+            </q-card-actions>
         </q-card>
     </q-dialog>
 </div>
 </template>
 <script>
-import { Component, Watch } from 'vue-property-decorator'
-import { mixins } from 'vue-class-component'
-import { TaxonomyMixin } from './TaxonomyMixin'
-import DefaultTermViewComponent from './DefaultTermViewComponent.vue'
+import { Component, Watch, Vue } from 'vue-property-decorator'
+import TaxonomyTree from './TaxonomyTree.vue'
 
 export default @Component({
     props: {
+        taxonomyCode: String,
         value: Array,
         multiple: Boolean
+    },
+    components: {
+        TaxonomyTree
     }
 })
-class DialogTaxonomyInputDialog extends mixins(TaxonomyMixin) {
+class DialogTaxonomyInputDialog extends Vue {
     selectedTerms = []
-    filter = ''
-    treeSort = {
-        recursive: false,
-        order: 'asc'
-    }
-
-    titleSort (node0, node1) {
-        return new Intl.Collator(node0.data.title[0].lang).compare(node0.data.title[0].value, node1.data.title[0].value)
-    }
-
-    sortTree () {
-        if (this.$refs.tree) {
-            this.$refs.tree.sortTree(
-                this.titleSort,
-                this.treeSort.recursive
-            )
-        }
-    }
 
     @Watch('value')
     valueChanged () {
-        this.sortTree()
         this.selectedTerms = this.value || []
-    }
-
-    mounted () {
-        this.valueChanged()
     }
 
     get opts () {
         return {
             checkbox: true,
-            filter: this.filterOptions,
             autoCheckChildren: false
         }
     }
 
     show () {
+        this.valueChanged()
         this.$refs.dialog.show()
     }
 
@@ -121,15 +74,9 @@ class DialogTaxonomyInputDialog extends mixins(TaxonomyMixin) {
         this.$emit('hide')
     }
 
-    onDialogShow () {
-        this.sortTree()
+    showSelectedTerms () {
         if (this.multiple && this.selectedTerms) {
-            this.selectedTerms.forEach(term => {
-                const selection = this.$refs.tree.find({ data: { id: term.id } })
-                if (selection) {
-                    selection.check()
-                }
-            })
+            this.$refs.tree.check(this.selectedTerms)
         }
     }
 
@@ -143,40 +90,32 @@ class DialogTaxonomyInputDialog extends mixins(TaxonomyMixin) {
     }
 
     singleValueClick (term) {
-        if (term.children.length > 0) {
+        if (term.descendants_count > 0) {
             return
         }
         if (this.multiple) {
             return
         }
-        this.selectedTerms = [term.data]
+        this.selectedTerms = [term]
         this.onOKClick()
     }
 
-    singleValueSelected (term) {
+    valueSelected (term) {
         if (this.multiple) {
-            return
+            this.selectedTerms.push(term)
+        } else {
+            this.selectedTerms = term
         }
-        this.selectedTerms = [term.data]
         if (!this.multiple) {
             this.onOKClick()
         }
     }
 
-    multipleValuesSelected () {
-        if (this.$refs.tree) {
-            const foundTerms = this.$refs.tree.findAll({ state: { checked: true } })
-            if (foundTerms !== null) {
-                this.selectedTerms = foundTerms.map(x => x.data)
-            } else {
-                this.selectedTerms = []
-            }
+    valueUnselected (term, removeFromTree) {
+        this.selectedTerms = this.selectedTerms.filter(x => x !== term)
+        if (removeFromTree) {
+            this.showSelectedTerms()
         }
-        this.onOKClick()
-    }
-
-    get viewComponent () {
-        return this.$taxonomies.termViewers[this.taxonomyCode] || this.$taxonomies.defaultViewer || DefaultTermViewComponent
     }
 }
 </script>

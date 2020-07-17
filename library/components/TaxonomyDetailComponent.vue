@@ -35,7 +35,9 @@ class TaxonomyDetailComponent extends Vue {
     showTest () {
         this.$q.dialog({
             parent: this,
-            component: DialogTaxonomyInputDialog
+            component: DialogTaxonomyInputDialog,
+            taxonomyCode: this.code,
+            multiple: true
         })
     }
 }

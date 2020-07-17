@@ -2,9 +2,13 @@
 <div class="container q-mt-lg">
     <taxonomy-tree :taxonomy-code="taxonomyCode" :start-expanded="startExpanded" ref="tree">
         <template v-slot:buttons-middle="{parentUrl}">
+            <slot name="buttons-middle" v-bind:parentUrl="parentUrl"></slot>
             <q-btn @click="addNode(parentUrl)" icon="add" flat dense color="positive" class="print-hide"
                    v-if="$taxonomies.termPermissions(taxonomyCode).includes('insert')">
             </q-btn>
+        </template>
+        <template v-slot:buttons-right="{parentUrl}">
+            <slot name="buttons-right" v-bind:parentUrl="parentUrl"></slot>
         </template>
 
         <template v-slot:term-buttons="{term, node}">
