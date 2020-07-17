@@ -12,10 +12,10 @@
               @filter="filterFn"
               @filter-abort="abortFilterFn"
               :hint="hint"
+              :placeholder="placeholder"
               @keydown="onKeyDown()"
               @input="clearText()"
               ref="select">
-
         <template v-slot:no-option>
         <q-item>
             <q-item-section class="text-grey">
@@ -71,7 +71,8 @@ export default @Component({
             default: 100
         },
         label: String,
-        hint: String
+        hint: String,
+        placeholder: String
     }
 })
 class TermSelect extends Vue {

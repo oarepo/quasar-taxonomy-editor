@@ -5,19 +5,26 @@
             <div class="row">
                 <div class="col q-ma-md">
                     <div class="text-h6">Single selection</div>
-                    <q-separator></q-separator>
-                    <term-select :taxonomy-code="taxonomyCode" v-model="single" :multiple="false"></term-select>
+                    <div class="q-mt-lg"></div>
+                    <term-select :taxonomy-code="taxonomyCode"
+                                 v-model="single"
+                                 :multiple="false"
+                                 hint="Start writing or click on the icon 🡒"></term-select>
                     <div class="text-h6 q-mt-xl q-mb-md">Selected value:</div>
                     <taxonomy-term :taxonomy-code="taxonomyCode" :term="single" v-if="single"></taxonomy-term>
                 </div>
                 <q-separator vertical></q-separator>
                 <div class="col q-ma-md">
                     <div class="text-h6">Multiple selection</div>
-                    <q-separator></q-separator>
-                    <term-select :taxonomy-code="taxonomyCode" v-model="multiple" :multiple="true"></term-select>
+                    <div class="q-mt-lg"></div>
+                    <term-select :taxonomy-code="taxonomyCode"
+                                 v-model="multiple"
+                                 :multiple="true"
+                                 hint="Start writing or click on the icon 🡒"></term-select>
                     <div class="text-h6 q-mt-xl q-mb-md">Selected value(s):</div>
                     <taxonomy-term :taxonomy-code="taxonomyCode" :term="term"
-                                       v-for="term in multiple" :key="term.slug"></taxonomy-term>
+                                   v-for="term in multiple" :key="term.slug"
+                    ></taxonomy-term>
                 </div>
             </div>
         </q-card-section>
