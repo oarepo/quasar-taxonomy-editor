@@ -4,7 +4,7 @@
               use-input
               :hide-selected="false"
               hide-dropdown-icon
-              clearable
+              :clearable="!multiple"
               :multiple="multiple"
               :input-debounce="debounce"
               :label="label"
@@ -12,7 +12,7 @@
               @filter="filterFn"
               @filter-abort="abortFilterFn"
               :hint="hint"
-              :placeholder="placeholder"
+              :placeholder="emptyModel ? placeholder: ''"
               @keydown="onKeyDown()"
               @input="clearText()"
               ref="select">
@@ -79,6 +79,10 @@ class TermSelect extends Vue {
     model = null
     options = []
     searchValue = null
+
+    get emptyModel () {
+        return !this.model || (Array.isArray(this.model) && !this.model.length)
+    }
 
     @Watch('value')
     valueChanged () {
