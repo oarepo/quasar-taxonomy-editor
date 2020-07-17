@@ -13,7 +13,7 @@
 
 <script>
 import { Component, Vue } from 'vue-property-decorator'
-import DialogTaxonomyInputDialog from './DialogTaxonomyInputDialog'
+import SampleDialog from 'app/library/components/SampleDialog'
 
 export default @Component({
     name: 'taxonomy-detail',
@@ -35,9 +35,8 @@ class TaxonomyDetailComponent extends Vue {
     showTest () {
         this.$q.dialog({
             parent: this,
-            component: DialogTaxonomyInputDialog,
-            taxonomyCode: this.code,
-            multiple: true
+            component: SampleDialog,
+            taxonomyCode: this.code
         })
     }
 }

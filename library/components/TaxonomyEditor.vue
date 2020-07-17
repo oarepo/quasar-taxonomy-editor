@@ -1,6 +1,5 @@
 <template>
 <div class="container q-mt-lg">
-    <term-select :taxonomy-code="taxonomyCode" class="q-mb-xl"></term-select>
     <taxonomy-tree :taxonomy-code="taxonomyCode" :start-expanded="startExpanded" ref="tree">
         <template v-slot:buttons-middle="{parentUrl}">
             <slot name="buttons-middle" v-bind:parentUrl="parentUrl"></slot>

@@ -53,13 +53,14 @@
 </template>
 
 <script>
-import { Vue, Component } from 'vue-property-decorator'
+import { Vue, Component, Watch } from 'vue-property-decorator'
 import DialogTaxonomyInputDialog from './DialogTaxonomyInputDialog'
+import { copyValue, termOrArrayChanged } from 'app/library/utils'
 
 export default @Component({
     name: 'term-select',
     props: {
-        terms: Object,
+        value: [Object, Array],
         taxonomyCode: String,
         multiple: {
             type: Boolean,
@@ -77,6 +78,20 @@ class TermSelect extends Vue {
     model = null
     options = []
     searchValue = null
+
+    @Watch('value')
+    valueChanged () {
+        if (termOrArrayChanged(this.model, this.value)) {
+            this.model = copyValue(this.value)
+        }
+    }
+
+    @Watch('model')
+    modelChanged () {
+        if (termOrArrayChanged(this.model, this.value)) {
+            this.$emit('input', this.model)
+        }
+    }
 
     filterFn (val, update, abort) {
         if (val.length < 2) {

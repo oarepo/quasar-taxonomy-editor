@@ -81,24 +81,7 @@
 <script>
 import { Component, Watch, Vue } from 'vue-property-decorator'
 import LiquorTree from 'liquor-tree'
-
-function arraysDiffer (a, b) {
-    a = a.map(x => x.slug)
-    b = b.map(x => x.slug)
-    a.sort()
-    b.sort()
-    for (let i = 0; i < a.length; ++i) {
-        if (a[i] !== b[i]) return true
-    }
-    return false
-}
-
-function arrayContains (arr, x) {
-    for (let i = 0; i < arr.length; ++i) {
-        if (arr[i].slug === x.slug) return true
-    }
-    return false
-}
+import { arrayContains, arraysDiffer } from 'app/library/utils'
 
 export default @Component({
     name: 'taxonomy-tree',
