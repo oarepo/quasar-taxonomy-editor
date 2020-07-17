@@ -1,5 +1,6 @@
 import { VueTaxonomy, TaxonomyComponentFactory } from '@oarepo/quasar-taxonomy-editor'
 import CountryTermViewComponent from 'components/CountryTermViewComponent'
+import CountryTermInplaceViewComponent from 'components/CountryTermInplaceViewComponent'
 import CountryEditComponent from 'components/CountryEditComponent'
 import ContinentEditComponent from 'components/ContinentEditComponent'
 
@@ -20,10 +21,19 @@ class CountryEditorFactory extends TaxonomyComponentFactory {
     }
 }
 
+class CountryViewFactory extends TaxonomyComponentFactory {
+    getComponent ({ term, parent, usage }) {
+        if (usage === 'inplace') {
+            return CountryTermInplaceViewComponent
+        }
+        return CountryTermViewComponent
+    }
+}
+
 export default async ({ Vue }) => {
     VueTaxonomy.install(Vue, {
         termViewers: {
-            country: CountryTermViewComponent
+            country: new CountryViewFactory()
         },
         termEditors: {
             country: new CountryEditorFactory()

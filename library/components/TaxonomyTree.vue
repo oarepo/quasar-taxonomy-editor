@@ -8,8 +8,8 @@
             <div class="row q-mr-sm" v-if="parentListTerm">
                 <div class="title row q-mt-sm q-ml-sm q-mr-sm">
                     <slot name="title" v-bind:subtree="parentListTerm" v-bind:parentUrl="parentUrl">
-                        <component :is="getTermViewComponent(parentListTerm)" :taxonomy-code="taxonomyCode"
-                                   :term="parentListTerm"></component>
+                        <taxonomy-term :term="parentListTerm" :taxonomy-code="taxonomyCode"
+                                       usage="title"></taxonomy-term>
                     </slot>
                 </div>
             </div>
@@ -47,9 +47,9 @@
     <slot name="after-header" v-bind:parentUrl="parentUrl"></slot>
     <tree :data="data" :options="treeOptions" ref="tree"
           v-if="dataReady"
-          @node:clicked="$emit('clicked', $event.data)"
-          @node:checked="$emit('selected', $event.data)"
-          @node:unchecked="$emit('unselected', $event.data)"
+          @node:clicked="clicked($event.data)"
+          @node:checked="checked($event.data)"
+          @node:unchecked="unchecked($event.data)"
     >
         <div slot-scope=" { node } " class="node-container full-width">
             <div class="row">
@@ -57,8 +57,8 @@
                     <slot :name="`term-${taxonomyCode || 'default'}`" v-bind:item="node.data">
                         <slot name="term" v-bind:item="node.data">
                             <div :class="{'node-text': true}">
-                                <component :is="getTermViewComponent(node.data)" :taxonomy-code="taxonomyCode"
-                                           :term="node.data"></component>
+                                <taxonomy-term :term="node.data" :taxonomy-code="taxonomyCode"
+                                               usage="tree"></taxonomy-term>
                             </div>
                         </slot>
                     </slot>
@@ -82,6 +82,24 @@
 import { Component, Watch, Vue } from 'vue-property-decorator'
 import LiquorTree from 'liquor-tree'
 
+function arraysDiffer (a, b) {
+    a = a.map(x => x.slug)
+    b = b.map(x => x.slug)
+    a.sort()
+    b.sort()
+    for (let i = 0; i < a.length; ++i) {
+        if (a[i] !== b[i]) return true
+    }
+    return false
+}
+
+function arrayContains (arr, x) {
+    for (let i = 0; i < arr.length; ++i) {
+        if (arr[i].slug === x.slug) return true
+    }
+    return false
+}
+
 export default @Component({
     name: 'taxonomy-tree',
     components: {
@@ -100,7 +118,12 @@ export default @Component({
         initialSize: {
             type: Number,
             default: 50
-        }
+        },
+        multiple: {
+            type: Boolean,
+            default: false
+        },
+        value: [Object, Array] // selected items
     }
 })
 class TaxonomyTree extends Vue {
@@ -115,17 +138,32 @@ class TaxonomyTree extends Vue {
     size = 0
     total = 0
     singleLevel = false
-
-    getTermViewComponent (term) {
-        return this.$taxonomies.getTermViewComponent({
-            taxonomy: this.taxonomyCode,
-            term: term
-        })
-    }
+    selected = []
+    checkRunning = false
 
     mounted () {
         this.size = this.initialSize
         this.loadTaxonomy()
+    }
+
+    @Watch('value')
+    valueChanged () {
+        if (this.value === null || this.value === undefined) {
+            if (this.selected.length) {
+                this.selected = []
+            }
+        } else if (Array.isArray(this.value)) {
+            if (arraysDiffer(this.value, this.selected)) {
+                this.selected = [...this.value]
+            }
+        } else {
+            if (this.selected.length !== 1 || this.selected[0] !== this.value) {
+                this.selected = [this.value]
+            }
+        }
+        this.later(() => {
+            this.check()
+        })
     }
 
     processData (data) {
@@ -160,15 +198,18 @@ class TaxonomyTree extends Vue {
                 if (this.startExpanded) {
                     this.later(() => {
                         this.$refs.tree.findAll({}).expand()
-                        this.$emit('loaded', {
-                            tree: this,
-                            page: this.page,
-                            terms: terms,
-                            total: this.total,
-                            size: this.size
-                        })
                     })
                 }
+                this.later(() => {
+                    this.valueChanged()
+                    this.$emit('loaded', {
+                        tree: this,
+                        page: this.page,
+                        terms: terms,
+                        total: this.total,
+                        size: this.size
+                    })
+                })
             })
         })
     }
@@ -235,18 +276,22 @@ class TaxonomyTree extends Vue {
         node.select()
     }
 
-    check (terms) {
-        terms.forEach(term => {
+    check () {
+        this.checkRunning = true
+        console.log('chec called', this.selected)
+        this.selected.forEach(term => {
             const selection = this.$refs.tree.find({ data: { slug: term.slug } })
             if (selection) {
                 selection.check()
             }
-        })
-        this.$refs.tree.checked().forEach(node => {
-            if (!terms.includes(node.data)) {
+        });
+        (this.$refs.tree.checked() || []).forEach(node => {
+            if (!arrayContains(this.selected, node.data)) {
+                console.log('chec removing', this.selected, node.data)
                 node.uncheck()
             }
         })
+        this.checkRunning = false
     }
 
     later (f) {
@@ -273,6 +318,44 @@ class TaxonomyTree extends Vue {
 
     collapse () {
         this.later(() => this.$refs.tree.findAll({}).collapse())
+    }
+
+    clicked (term) {
+        if (term.descendants_count > 0) {
+            return
+        }
+        this.selected = [term]
+        this.$emit('input', this.selected)
+    }
+
+    checked (term) {
+        if (this.checkRunning) {
+            return
+        }
+        console.log('check called', term)
+        for (const t of this.selected) {
+            if (t.slug === term.slug) {
+                return
+            }
+        }
+        if (this.multiple) {
+            this.selected.push(term)
+        } else {
+            this.selected = [term]
+        }
+        this.$emit('input', this.selected)
+    }
+
+    unchecked (term) {
+        if (this.checkRunning || this.multiple) {
+            return
+        }
+        console.log('uncheck called', term)
+        const prevSelected = this.selected
+        this.selected = this.selected.filter(x => x !== term)
+        if (prevSelected.length !== this.selected.length) {
+            this.$emit('input', this.selected)
+        }
     }
 }
 </script>

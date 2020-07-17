@@ -1,12 +1,10 @@
 <template>
 <div>
-    <q-dialog ref="dialog" @hide="onDialogHide" @show="showSelectedTerms">
+    <q-dialog ref="dialog" @hide="onDialogHide">
         <q-card class="q-dialog-plugin" style="width: 700px; max-width: 80vw; ">
             <q-card-section class="q-mt-lg">
                 <taxonomy-tree :taxonomy-code="taxonomyCode" :start-expanded="true" :tree-options="opts" ref="tree"
-                               @clicked="singleValueClick" @selected="valueSelected" @unselected="valueUnselected"
-                               @loaded="showSelectedTerms"
-                               :initial-size="10">
+                               :value="selected" @input="treeSelected" :multiple="multiple" :initial-size="10">
                 </taxonomy-tree>
             </q-card-section>
             <q-card-section v-if="multiple">
@@ -14,9 +12,10 @@
                     <q-field class="col" label="Selected" stack-label>
                         <template v-slot:control>
                         <div class="row items-end q-gutter-sm">
-                            <q-chip removable v-for="term in selectedTerms" :key="term.slug" color="primary" dark
+                            <q-chip removable v-for="term in selected" :key="term.slug" color="primary" outline
                                     @remove="valueUnselected(term, true)">
-                                {{ term.slug }}
+                                <taxonomy-term :term="term" :taxonomy-code="taxonomyCode"
+                                               usage="inplace"></taxonomy-term>
                             </q-chip>
                         </div>
                         </template>
@@ -25,7 +24,8 @@
             </q-card-section>
             <q-card-actions align="right">
                 <q-btn @click="hide" flat color="grey">Cancel</q-btn>
-                <q-btn @click="onOKClick" flat color="positive" icon="done"  v-if="multiple"><span class="q-pl-sm">Ok</span>
+                <q-btn @click="onOKClick" flat color="positive" icon="done" v-if="multiple"><span
+                    class="q-pl-sm">Ok</span>
                 </q-btn>
             </q-card-actions>
         </q-card>
@@ -33,13 +33,13 @@
 </div>
 </template>
 <script>
-import { Component, Watch, Vue } from 'vue-property-decorator'
+import { Component, Vue } from 'vue-property-decorator'
 import TaxonomyTree from './TaxonomyTree.vue'
 
 export default @Component({
     props: {
         taxonomyCode: String,
-        value: Array,
+        value: [Object, Array],
         multiple: Boolean
     },
     components: {
@@ -47,12 +47,7 @@ export default @Component({
     }
 })
 class DialogTaxonomyInputDialog extends Vue {
-    selectedTerms = []
-
-    @Watch('value')
-    valueChanged () {
-        this.selectedTerms = this.value || []
-    }
+    selected = []
 
     get opts () {
         return {
@@ -61,8 +56,22 @@ class DialogTaxonomyInputDialog extends Vue {
         }
     }
 
+    treeSelected (value) {
+        console.log('Tree seelcted called', value, this.selected)
+        if (this.multiple) {
+            this.selected = value
+        } else if (value.length) {
+            this.$emit('ok', value[0])
+            this.hide()
+        }
+    }
+
     show () {
-        this.valueChanged()
+        if (this.multiple) {
+            this.selected = this.value || []
+        } else if (this.value) {
+            this.selected = this.value
+        }
         this.$refs.dialog.show()
     }
 
@@ -74,48 +83,13 @@ class DialogTaxonomyInputDialog extends Vue {
         this.$emit('hide')
     }
 
-    showSelectedTerms () {
-        if (this.multiple && this.selectedTerms) {
-            this.$refs.tree.check(this.selectedTerms)
-        }
-    }
-
     onOKClick () {
-        this.$emit('ok', this.selectedTerms)
+        this.$emit('ok', this.selected)
         this.hide()
     }
 
     onCancelClick () {
         this.hide()
-    }
-
-    singleValueClick (term) {
-        if (term.descendants_count > 0) {
-            return
-        }
-        if (this.multiple) {
-            return
-        }
-        this.selectedTerms = [term]
-        this.onOKClick()
-    }
-
-    valueSelected (term) {
-        if (this.multiple) {
-            this.selectedTerms.push(term)
-        } else {
-            this.selectedTerms = term
-        }
-        if (!this.multiple) {
-            this.onOKClick()
-        }
-    }
-
-    valueUnselected (term, removeFromTree) {
-        this.selectedTerms = this.selectedTerms.filter(x => x !== term)
-        if (removeFromTree) {
-            this.showSelectedTerms()
-        }
     }
 }
 </script>

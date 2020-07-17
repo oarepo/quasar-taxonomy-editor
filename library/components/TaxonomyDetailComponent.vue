@@ -13,7 +13,7 @@
 
 <script>
 import { Component, Vue } from 'vue-property-decorator'
-import DialogTaxonomyInputDialog from 'app/library/components/DialogTaxonomyInputDialog'
+import DialogTaxonomyInputDialog from './DialogTaxonomyInputDialog'
 
 export default @Component({
     name: 'taxonomy-detail',

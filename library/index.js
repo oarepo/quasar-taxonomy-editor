@@ -4,12 +4,13 @@
  *
  */
 import TaxonomyEditor from './components/TaxonomyEditor.vue'
-import DialogTaxonomyInput from './components/DialogTaxonomyInput.vue'
 import axios from 'axios'
 import { TaxonomyComponentFactory } from './types'
 import DefaultTermViewComponent from 'app/library/components/DefaultTermViewComponent'
 import DefaultTaxonomyViewComponent from 'app/library/components/DefaultTaxonomyViewComponent'
 import DefaultEditDialogComponent from 'app/library/components/DefaultEditDialogComponent'
+import TermComponent from 'app/library/components/TermComponent'
+import TermSelect from 'app/library/components/TermSelect'
 
 class Taxonomies {
     constructor (options) {
@@ -87,6 +88,12 @@ class Taxonomies {
         }
     }
 
+    async suggest ({ code, filter, size }) {
+        const url = `${this.taxonomiesUrl}${code}?page=1&size=${size || 20}&representation:include=dsc,anc,slug,dcn,drl,lvl&q=${encodeURIComponent(filter)}`
+        const ret = await axios.get(url)
+        return ret.data.children || []
+    }
+
     async addChild ({ term = undefined, url = undefined, child }) {
         if (!url) {
             url = `${term.links.self}?representation:include=dsc,slug,dcn,drl,lvl`
@@ -125,43 +132,47 @@ class Taxonomies {
         this.taxonomyEditors[code] = editor
     }
 
-    _getComponent ({ taxonomy, term, parent }, components, defaultComponent) {
+    _getComponent ({ taxonomy, term, parent, usage }, components, defaultComponent) {
         const component = components[taxonomy] || defaultComponent
         if (component instanceof TaxonomyComponentFactory) {
-            return component.getComponent({ taxonomy, term, parent })
+            return component.getComponent({ taxonomy, term, parent, usage })
         }
         return component
     }
 
-    getTermViewComponent ({ taxonomy, term, parent }) {
+    getTermViewComponent ({ taxonomy, term, parent, usage }) {
         return this._getComponent({
             taxonomy,
             term,
-            parent
+            parent,
+            usage
         }, this.termViewers, this.defaultTermViewer || DefaultTermViewComponent)
     }
 
-    getTaxonomyViewComponent ({ taxonomy, term, parent }) {
+    getTaxonomyViewComponent ({ taxonomy, term, parent, usage }) {
         return this._getComponent({
             taxonomy,
             term,
-            parent
+            parent,
+            usage
         }, this.taxonomyViewers, this.defaultTaxonomyViewer, DefaultTaxonomyViewComponent)
     }
 
-    getTermEditComponent ({ taxonomy, term, parent }) {
+    getTermEditComponent ({ taxonomy, term, parent, usage }) {
         return this._getComponent({
             taxonomy,
             term,
-            parent
+            parent,
+            usage
         }, this.termEditors, this.defaultTermEditor || DefaultEditDialogComponent)
     }
 
-    getTaxonomyEditComponent ({ taxonomy, term, parent }) {
+    getTaxonomyEditComponent ({ taxonomy, term, parent, usage }) {
         return this._getComponent({
             taxonomy,
             term,
-            parent
+            parent,
+            usage
         }, this.taxonomyEditors, this.defaultTaxonomyEditor || DefaultEditDialogComponent)
     }
 }
@@ -169,7 +180,8 @@ class Taxonomies {
 const VueTaxonomy = {
     install (Vue, options = {}) {
         Vue.component('taxonomy-editor', TaxonomyEditor)
-        Vue.component('dialog-taxonomy-input', DialogTaxonomyInput)
+        Vue.component('taxonomy-term', TermComponent)
+        Vue.component('term-select', TermSelect)
         Vue.prototype.$taxonomies = new Taxonomies(options)
     }
 }
@@ -177,6 +189,5 @@ const VueTaxonomy = {
 export {
     VueTaxonomy,
     TaxonomyEditor,
-    DialogTaxonomyInput,
     TaxonomyComponentFactory
 }
