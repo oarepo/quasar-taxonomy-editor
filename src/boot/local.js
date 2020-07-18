@@ -47,6 +47,7 @@ export default async ({ Vue }) => {
             const ret = ['edit']
             if (term.level > 1) {
                 ret.push('delete')
+                ret.push('move')
             } else {
                 ret.push('insert')
             }
