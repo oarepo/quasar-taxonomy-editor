@@ -2,13 +2,17 @@
 <div class="container q-mt-lg">
     <taxonomy-tree :taxonomy-code="taxonomyCode" :start-expanded="startExpanded" ref="tree">
         <template v-slot:buttons-middle="{parentUrl}">
-            <slot name="buttons-middle" v-bind:parentUrl="parentUrl"></slot>
-            <q-btn @click="addNode(parentUrl)" icon="add" flat dense color="positive" class="print-hide"
-                   v-if="$taxonomies.termPermissions(taxonomyCode).includes('insert')">
-            </q-btn>
+        <slot name="buttons-middle" v-bind:parentUrl="parentUrl"></slot>
+        <q-btn @click="addNode(parentUrl)" icon="add" flat dense color="positive" class="print-hide"
+               v-if="$taxonomies.termPermissions(taxonomyCode).includes('insert')">
+        </q-btn>
         </template>
         <template v-slot:buttons-right="{parentUrl}">
-            <slot name="buttons-right" v-bind:parentUrl="parentUrl"></slot>
+        <slot name="buttons-right" v-bind:parentUrl="parentUrl"></slot>
+        </template>
+
+        <template v-slot:menu="{parentUrl}">
+        <slot name="menu" v-bind:parentUrl="parentUrl"></slot>
         </template>
 
         <template v-slot:term-buttons="{term, node}">
@@ -16,8 +20,9 @@
             :taxonomy="taxonomyCode" :term="term" :node="node"
             :permissions="$taxonomies.termPermissions(taxonomyCode, term)"
             @edit-term="editTerm"
-            @add-child-node="addChildNode"
-            @remove-node="removeNode"
+            @add-child-term="addChildNode"
+            @remove-term="removeNode"
+            @move-term="moveNode"
         ></taxonomy-editor-buttons>
         </template>
     </taxonomy-tree>
@@ -27,8 +32,9 @@
 <script>
 import { Component, Vue } from 'vue-property-decorator'
 import TaxonomyEditorButtons from './TaxonomyEditorButtons.vue'
-import TaxonomyTree from './TaxonomyTree.vue'
-import EditDialog from './EditDialog.vue'
+import TaxonomyTree from '../TaxonomyTree.vue'
+import EditDialog from '../dialogs/EditDialog.vue'
+import MoveDialog from 'app/library/components/dialogs/MoveDialog'
 
 export default @Component({
     name: 'taxonomy-editor',
@@ -120,26 +126,44 @@ class TaxonomyEditor extends Vue {
     removeNode ({ term, node }) {
         this.$q.dialog({
             title: 'Deleting taxonomy term',
-            message: 'Do you really want to delete taxonomy term?',
+            message: 'Do you really want to delete taxonomy term? This action can not be undone!',
             cancel: true,
+            focus: 'cancel',
             persistent: true
         }).onOk(() => {
             this.$axios.delete(term.links.self).then(() => {
                 node.remove()
             }).catch(error => {
                 if (error.response.status === 409) {
-                    const recnum = error.response.data.message.records.length
                     this.$q.notify({
-                        message: `Tento pojem je použit ve ${recnum} existujících záznamech.` +
-                            'Odeberte jej prosím nejdříve z těchto záznamů',
+                        message: 'This term is referenced from other resources. ' +
+                            'Please change the resources before term removal.',
+                        color: 'red',
+                        position: 'center',
+                        icon: 'block'
+                    })
+                } else if (error.response.status === 412) {
+                    this.$q.notify({
+                        message: 'This term is locked, please wait until the locking process finishes',
                         color: 'red',
                         position: 'center',
                         icon: 'block'
                     })
                 } else {
-                    console.log('failed to delete term')
+                    console.error('failed to delete term')
                 }
             })
+        })
+    }
+
+    moveNode ({ term, node }) {
+        this.$q.dialog({
+            parent: this,
+            component: MoveDialog,
+            taxonomyCode: this.taxonomyCode,
+            term: term
+        }).onOk(() => {
+            this.$refs.tree.loadTaxonomy()
         })
     }
 

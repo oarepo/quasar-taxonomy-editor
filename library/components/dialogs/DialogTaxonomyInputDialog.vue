@@ -2,6 +2,11 @@
 <div>
     <q-dialog ref="dialog" @hide="onDialogHide">
         <q-card class="q-dialog-plugin" style="width: 700px; max-width: 80vw; ">
+            <q-card-section v-if="title">
+                <div class="text-h6">
+                    {{ title }}
+                </div>
+            </q-card-section>
             <q-card-section class="q-mt-lg">
                 <taxonomy-tree :taxonomy-code="taxonomyCode" :start-expanded="true" :tree-options="opts" ref="tree"
                                :value="selected" @input="treeSelected" :multiple="multiple" :initial-size="10">
@@ -34,13 +39,14 @@
 </template>
 <script>
 import { Component, Vue } from 'vue-property-decorator'
-import TaxonomyTree from './TaxonomyTree.vue'
+import TaxonomyTree from '../TaxonomyTree.vue'
 
 export default @Component({
     props: {
         taxonomyCode: String,
         value: [Object, Array],
-        multiple: Boolean
+        multiple: Boolean,
+        title: String
     },
     components: {
         TaxonomyTree
@@ -57,7 +63,6 @@ class DialogTaxonomyInputDialog extends Vue {
     }
 
     treeSelected (value) {
-        console.log('Tree seelcted called', value, this.selected)
         if (this.multiple) {
             this.selected = value
         } else if (value.length) {

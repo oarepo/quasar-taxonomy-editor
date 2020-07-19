@@ -3,14 +3,14 @@
  * OARepo vue.js default components to be used in vuejs based client for invenio repository
  *
  */
-import TaxonomyEditor from './components/TaxonomyEditor.vue'
+import TaxonomyEditor from './components/editor/TaxonomyEditor.vue'
 import axios from 'axios'
 import { TaxonomyComponentFactory } from './types'
-import DefaultTermViewComponent from 'app/library/components/DefaultTermViewComponent'
-import DefaultTaxonomyViewComponent from 'app/library/components/DefaultTaxonomyViewComponent'
-import DefaultEditDialogComponent from 'app/library/components/DefaultEditDialogComponent'
+import DefaultTermViewComponent from 'app/library/components/default/DefaultTermViewComponent'
+import DefaultTaxonomyViewComponent from 'app/library/components/default/DefaultTaxonomyViewComponent'
+import DefaultEditDialogComponent from 'app/library/components/default/DefaultEditDialogComponent'
 import TermComponent from 'app/library/components/TermComponent'
-import TermSelect from 'app/library/components/TermSelect'
+import TermSelect from 'app/library/components/dialogs/TermSelect'
 
 class Taxonomies {
     constructor (options) {
@@ -55,7 +55,7 @@ class Taxonomies {
     }
 
     async loadTaxonomies () {
-        return (await axios.get(`${this.taxonomiesUrl}?representation:include=dcn`)).data.reduce((dict, x) => {
+        return (await axios.get(`${this.taxonomiesUrl}?representation:include=dcn sta data`)).data.reduce((dict, x) => {
             dict[x.code] = x
             return dict
         }, {})
@@ -69,13 +69,16 @@ class Taxonomies {
         return `${this.taxonomiesUrl}${code}`
     }
 
-    async loadTaxonomyPage ({ code, page, size, url, filter, levels }) {
+    async loadTaxonomyPage ({ code, page, size, url, filter, levels, deleted }) {
         if (!url) {
-            url = `${this.taxonomiesUrl}${code}?page=${page}&size=${size}&representation:include=dsc,anh,slug,dcn,drl,lvl`
+            url = `${this.taxonomiesUrl}${code}?page=${page}&size=${size}&representation:include=dsc,anh,slug,dcn,drl,lvl,sta`
         } else {
-            url = `${url}?page=${page}&size=${size}&representation:include=dsc,anh,slug,dcn,drl,lvl`
+            url = `${url}?page=${page}&size=${size}&representation:include=dsc,anh,slug,dcn,drl,lvl,sta`
         }
-        if (levels) {
+        if (deleted) {
+            url = `${url},del`
+        }
+        if (levels && !filter) {
             url = `${url}&representation:levels=${levels}`
         }
         if (filter) {
@@ -114,6 +117,16 @@ class Taxonomies {
             }
         })
         return ret.data
+    }
+
+    async move ({ term, destination }) {
+        const url = term.links.self
+        return (await axios.post(url, {}, {
+            headers: {
+                'Content-Type': 'application/vnd.move',
+                Destination: destination.links.self
+            }
+        })).data
     }
 
     addViewer (code, viewer) {

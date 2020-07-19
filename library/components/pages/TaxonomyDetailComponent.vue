@@ -4,8 +4,15 @@
         <div :class="titleClass">{{$taxonomies.titleGetter(taxonomy)}}</div>
     </slot>
     <taxonomy-editor :taxonomy-code="code" :startExpanded="true">
-        <template v-slot:buttons-middle>
-        <q-btn flat color="primary" icon="dialpad" title="test" @click="showTest()"></q-btn>
+        <template v-slot:menu>
+        <q-item clickable v-close-popup @click="showTest">
+            <q-item-section avatar>
+                <q-icon name="dialpad" color="primary"></q-icon>
+            </q-item-section>
+            <q-item-section>
+                Test dialog
+            </q-item-section>
+        </q-item>
         </template>
     </taxonomy-editor>
 </div>
@@ -13,7 +20,7 @@
 
 <script>
 import { Component, Vue } from 'vue-property-decorator'
-import SampleDialog from 'app/library/components/SampleDialog'
+import SampleDialog from 'app/library/components/dialogs/SampleDialog'
 
 export default @Component({
     name: 'taxonomy-detail',

@@ -9,7 +9,10 @@
                     <q-card-section :class="titleClass">
                         <div class="text-h4">{{$taxonomies.titleGetter(taxonomy)}}</div>
                         <q-badge color="primary" v-if="taxonomy.descendants_count">
-                            {{ taxonomy.descendants_count }}
+                            {{ taxonomy.descendants_count }} terms
+                        </q-badge>
+                        <q-badge color="negative" v-if="taxonomy.descendants_busy_count">
+                            {{ taxonomy.descendants_busy_count }} pending operations
                         </q-badge>
                     </q-card-section>
                 </slot>
@@ -25,10 +28,6 @@
                             <span class="q-pl-sm">{{ $t('taxonomy.open') }}</span>
                         </q-btn>
                         <q-space></q-space>
-                        <q-btn color="negative" flat icon="delete"
-                               v-if="$taxonomies.taxonomyPermissions(taxonomy).includes('delete')">
-                            <span class="q-pl-sm">{{$t('taxonomy.delete') }}</span>
-                        </q-btn>
                     </q-card-actions>
                 </slot>
             </q-card>
@@ -48,7 +47,7 @@
 
 <script>
 import { Component, Vue } from 'vue-property-decorator'
-import DefaultTaxonomyViewComponent from 'app/library/components/DefaultTaxonomyViewComponent'
+import DefaultTaxonomyViewComponent from 'app/library/components/default/DefaultTaxonomyViewComponent'
 
 export default @Component({
     name: 'taxonomy-list',

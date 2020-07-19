@@ -5,8 +5,8 @@
             <component :is="editor" :initial="initial" ref="editor"></component>
         </q-card-section>
         <q-card-actions align="right">
-            <q-btn flat color="primary" label="OK" @click="onOKClick"/>
             <q-btn flat label="Cancel" @click="onCancelClick"/>
+            <q-btn flat color="primary" label="Save" @click="onOKClick" focused/>
         </q-card-actions>
     </q-card>
 </q-dialog>
@@ -44,7 +44,7 @@ class EditDialog extends Vue {
                 this.$emit('ok', result)
                 this.hide()
             }).catch(err => {
-                console.log(err)
+                console.error(err)
                 if (this.$refs.editor.error) {
                     this.$refs.editor.error(err)
                 } else {

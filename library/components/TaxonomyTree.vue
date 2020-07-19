@@ -22,13 +22,6 @@
         <q-btn icon="expand_less" flat color="primary" dense
                @click="collapse"
                title="collapse all"></q-btn>
-        <q-btn icon="refresh" flat color="primary" dense @click="loadTaxonomy"
-               title="refresh"></q-btn>
-        <q-btn flat color="primary" dense @click="singleLevel = !singleLevel; loadTaxonomy()"
-               title="list/hierarchy">
-            <q-icon name="view_headline" v-if="singleLevel"></q-icon>
-            <q-icon name="vertical_split" class="rotate-180" v-else></q-icon>
-        </q-btn>
         <slot name="buttons-middle" v-bind:parentUrl="parentUrl"></slot>
         <q-space/>
         <q-pagination v-model="page" :max="maxPage" :direction-links="true" :max-pages="6"
@@ -42,12 +35,52 @@
             <q-icon name="search"/>
             </template>
         </q-input>
+        <q-btn flat icon="more_vert" dense size="sm">
+            <q-menu anchor="bottom right" self="top right">
+                <q-list style="min-width: 100px">
+                    <q-item clickable v-close-popup @click="singleLevel = !singleLevel; loadTaxonomy()">
+                        <q-item-section avatar>
+                            <q-icon color="primary" name="view_headline" v-if="!singleLevel"></q-icon>
+                            <q-icon color="primary" name="vertical_split" class="rotate-180" v-else></q-icon>
+                        </q-item-section>
+                        <q-item-section v-if="!singleLevel">
+                            Hide hierarchy
+                        </q-item-section>
+                        <q-item-section v-else>
+                            Show hierarchy
+                        </q-item-section>
+                    </q-item>
+                    <q-item clickable v-close-popup @click="deleted = !deleted; loadTaxonomy()">
+                        <q-item-section avatar>
+                            <q-icon color="primary" name="delete" v-if="!deleted"></q-icon>
+                            <q-icon color="grey" name="delete_outline" class="rotate-180" v-else></q-icon>
+                        </q-item-section>
+                        <q-item-section v-if="!deleted">
+                            Show deleted
+                        </q-item-section>
+                        <q-item-section v-else>
+                            Hide deleted
+                        </q-item-section>
+                    </q-item>
+                    <q-separator></q-separator>
+                    <q-item clickable v-close-popup @click="loadTaxonomy">
+                        <q-item-section avatar>
+                            <q-icon name="refresh" color="primary"></q-icon>
+                        </q-item-section>
+                        <q-item-section>
+                            Refresh
+                        </q-item-section>
+                    </q-item>
+                    <slot name="menu" v-bind:parentUrl="parentUrl"></slot>
+                </q-list>
+            </q-menu>
+        </q-btn>
         <slot name="buttons-end" v-bind:parentUrl="parentUrl"></slot>
     </div>
     <slot name="after-header" v-bind:parentUrl="parentUrl"></slot>
     <tree :data="data" :options="treeOptions" ref="tree"
           v-if="dataReady"
-          @node:clicked="clicked($event.data)"
+          @node:clicked="clicked($event.data, $event)"
           @node:checked="checked($event.data)"
           @node:unchecked="unchecked($event.data)"
     >
@@ -56,20 +89,35 @@
                 <div class="col">
                     <slot :name="`term-${taxonomyCode || 'default'}`" v-bind:item="node.data">
                         <slot name="term" v-bind:item="node.data">
-                            <div :class="{'node-text': true}">
+                            <div class="node-text row items-end">
+                                <q-icon name="keyboard_arrow_right" size='sm'
+                                        v-if="(!node.children || node.children.length === 0) && node.data.descendants_count"></q-icon>
                                 <taxonomy-term :term="node.data" :taxonomy-code="taxonomyCode"
-                                               usage="tree"></taxonomy-term>
+                                               usage="tree"
+                                               :class="{deleted: node.data.status !== 'alive'}">
+                                </taxonomy-term>
                             </div>
                         </slot>
                     </slot>
                 </div>
                 <div class="node-controls row">
-                    <q-badge color="primary" size="sm" outline v-if="node.data.descendants_count">
-                        {{node.data.descendants_count}}
-                    </q-badge>
-                    <q-btn href="#" @click.stop="openTaxonomy({term: node.data, node})" flat icon="fullscreen"
-                           size="sm"
-                           color="primary" v-if="node.data.descendants_count>0"></q-btn>
+                    <div class="q-mr-md">
+                        <q-badge color="primary" size="sm" outline v-if="node.data.descendants_count">
+                            {{node.data.descendants_count}}
+                        </q-badge>
+                        <q-badge color="negative" size="sm" outline class="q-ml-sm"
+                                 v-if="node.data.status !== 'alive'">
+                            {{ node.data.status }}
+                        </q-badge>
+                        <q-badge color="negative" size="sm" outline class="q-ml-sm"
+                                 v-if="node.data.descendants_busy_count">
+                            {{node.data.descendants_busy_count}} locked
+                        </q-badge>
+                        <q-badge color="negative" size="sm" outline class="q-ml-sm"
+                                 v-if="node.data.busy_count">
+                            Locked
+                        </q-badge>
+                    </div>
                     <slot name="term-buttons" v-bind:term="node.data" v-bind:node="node"></slot>
                 </div>
             </div>
@@ -120,9 +168,10 @@ class TaxonomyTree extends Vue {
     page = 1
     size = 0
     total = 0
-    singleLevel = false
+    singleLevel = true
     selected = []
     checkRunning = false
+    deleted = false
 
     mounted () {
         this.size = this.initialSize
@@ -170,7 +219,8 @@ class TaxonomyTree extends Vue {
             size: this.size,
             url: this.localTaxonomyUrl,
             filter: this.activatedFilter,
-            levels: this.singleLevel ? 1 : undefined
+            levels: this.singleLevel ? 1 : undefined,
+            deleted: this.deleted
         }).then(({ terms, total }) => {
             // terms starts with taxonomy node
             this.data = this.processData(terms.children)
@@ -261,7 +311,6 @@ class TaxonomyTree extends Vue {
 
     check () {
         this.checkRunning = true
-        console.log('chec called', this.selected)
         this.selected.forEach(term => {
             const selection = this.$refs.tree.find({ data: { slug: term.slug } })
             if (selection) {
@@ -270,7 +319,6 @@ class TaxonomyTree extends Vue {
         });
         (this.$refs.tree.checked() || []).forEach(node => {
             if (!arrayContains(this.selected, node.data)) {
-                console.log('chec removing', this.selected, node.data)
                 node.uncheck()
             }
         })
@@ -303,8 +351,21 @@ class TaxonomyTree extends Vue {
         this.later(() => this.$refs.tree.findAll({}).collapse())
     }
 
-    clicked (term) {
+    clicked (term, node) {
         if (term.descendants_count > 0) {
+            if (node.children.length) {
+                if (node.expanded()) {
+                    this.later(() => {
+                        node.collapse()
+                    })
+                } else {
+                    this.later(() => {
+                        node.expand()
+                    })
+                }
+            } else {
+                this.openTaxonomy({ term, node })
+            }
             return
         }
         this.selected = [term]
@@ -315,7 +376,6 @@ class TaxonomyTree extends Vue {
         if (this.checkRunning) {
             return
         }
-        console.log('check called', term)
         for (const t of this.selected) {
             if (t.slug === term.slug) {
                 return
@@ -333,7 +393,6 @@ class TaxonomyTree extends Vue {
         if (this.checkRunning || this.multiple) {
             return
         }
-        console.log('uncheck called', term)
         const prevSelected = this.selected
         this.selected = this.selected.filter(x => x !== term)
         if (prevSelected.length !== this.selected.length) {
@@ -357,4 +416,8 @@ class TaxonomyTree extends Vue {
         padding-top: 10px
         padding-bottom: 10px
         background-color: lightyellow
+
+    .deleted
+        color: grey !important
+        text-decoration: line-through
 </style>

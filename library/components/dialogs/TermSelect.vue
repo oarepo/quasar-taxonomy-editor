@@ -43,10 +43,12 @@
         </template>
 
         <template v-slot:selected-item="{opt, index, removeAtIndex}">
-        <q-chip removable @remove="removeAtIndex(index)" v-if="multiple">
+        <q-chip removable @remove="removeAtIndex(index)" v-if="multiple" color="primary" outline class="q-pa-md">
             <taxonomy-term :term="opt" :taxonomy-code="taxonomyCode" usage="inplace"></taxonomy-term>
         </q-chip>
-        <taxonomy-term :term="opt" :taxonomy-code="taxonomyCode" usage="inplace" v-else></taxonomy-term>
+        <q-chip color="primary" outline class="q-pa-md" v-else>
+            <taxonomy-term :term="opt" :taxonomy-code="taxonomyCode" usage="inplace"></taxonomy-term>
+        </q-chip>
         </template>
     </q-select>
 </div>
@@ -72,7 +74,11 @@ export default @Component({
         },
         label: String,
         hint: String,
-        placeholder: String
+        placeholder: {
+            type: String,
+            default: 'Start writing or click on the icon 🡒'
+        },
+        selectorTitle: String
     }
 })
 class TermSelect extends Vue {
@@ -124,6 +130,7 @@ class TermSelect extends Vue {
             parent: this,
             component: DialogTaxonomyInputDialog,
             taxonomyCode: this.taxonomyCode,
+            title: this.selectorTitle,
             value: this.model,
             multiple: this.multiple
         }).onOk((value) => {
@@ -139,6 +146,10 @@ class TermSelect extends Vue {
 
     clearText () {
         this.$refs.select.updateInputValue('')
+    }
+
+    openSelector () {
+        this.showTaxonomy()
     }
 }
 </script>

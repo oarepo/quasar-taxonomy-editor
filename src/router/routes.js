@@ -1,12 +1,12 @@
 const routes = [
     {
         path: '/',
-        component: () => import('app/library/components/TaxonomyListComponent.vue')
+        component: () => import('app/library/components/pages/TaxonomyListComponent')
     },
     {
         path: '/taxonomies/:code',
         name: 'taxonomy-detail',
-        component: () => import('app/library/components/TaxonomyDetailComponent.vue'),
+        component: () => import('app/library/components/pages/TaxonomyDetailComponent'),
         props: true
     },
 

@@ -1,7 +1,7 @@
 <template>
 <div>
     <span v-if="permissions.includes('delete')">
-        <q-btn @click.stop="$emit('add-child-node', {term,node})"
+        <q-btn @click.stop="$emit('add-child-term', {term,node})"
                flat icon="playlist_add" size="sm"
                title="Add child term"
                color="positive" v-if="permissions.includes('insert')" dense class="q-mr-sm"></q-btn>
@@ -9,7 +9,7 @@
                flat icon="edit" size="sm"
                title="Edit term"
                color="primary" v-if="permissions.includes('edit')" dense class="q-mr-sm"></q-btn>
-        <q-btn @click.stop="$emit('remove-node', {term,node})"
+        <q-btn @click.stop="$emit('remove-term', {term,node})"
                flat icon="remove" size="sm"
                title="Remove term"
                color="negative" v-if="permissions.includes('delete')" dense class="q-mr-sm"></q-btn>
@@ -19,7 +19,7 @@
                flat icon="edit" size="sm"
                title="Edit term"
                color="primary" v-if="permissions.includes('edit')" dense class="q-mr-sm"></q-btn>
-        <q-btn @click.stop="$emit('add-child-node', {term,node})"
+        <q-btn @click.stop="$emit('add-child-term', {term,node})"
                flat icon="playlist_add" size="sm"
                title="Remove term"
                color="positive" v-if="permissions.includes('insert')" dense class="q-mr-sm"></q-btn>
