@@ -28,7 +28,7 @@
 
 <script>
 import { Component, Vue } from 'vue-property-decorator'
-import TaxonomyTree from 'app/library/components/TaxonomyTree'
+import TaxonomyTree from '../TaxonomyTree.vue'
 
 export default @Component({
     props: {

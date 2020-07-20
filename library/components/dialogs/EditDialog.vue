@@ -71,6 +71,3 @@ class EditDialog extends Vue {
     }
 }
 </script>
-<style>
-
-</style>

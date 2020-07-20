@@ -44,7 +44,7 @@
 
 <script>
 import { Component, Vue } from 'vue-property-decorator'
-import DefaultTaxonomyViewComponent from 'app/library/components/default/DefaultTaxonomyViewComponent'
+import DefaultTaxonomyViewComponent from '../default/DefaultTaxonomyViewComponent.vue'
 
 export default @Component({
     name: 'taxonomy-list',

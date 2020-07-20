@@ -1,5 +1,5 @@
 <template>
-<div class="tree">
+<div class="tree taxonomy">
     <div class="buttons row">
         <slot name="buttons-left" v-bind:parentUrl="parentUrl"></slot>
         <q-btn flat color="primary" dense @click="taxonomyUp()"
@@ -129,7 +129,7 @@
 <script>
 import { Component, Watch, Vue } from 'vue-property-decorator'
 import LiquorTree from 'liquor-tree'
-import { arrayContains, arraysDiffer } from 'app/library/utils'
+import { arrayContains, arraysDiffer } from '../utils'
 
 export default @Component({
     name: 'taxonomy-tree',
@@ -401,23 +401,3 @@ class TaxonomyTree extends Vue {
     }
 }
 </script>
-
-<style lang="stylus" scoped>
-.tree
-    min-height 10vh
-
-    .buttons
-        margin-left: 0px
-
-    .title
-        color: $secondary
-
-    .new
-        padding-top: 10px
-        padding-bottom: 10px
-        background-color: lightyellow
-
-    .deleted
-        color: grey !important
-        text-decoration: line-through
-</style>

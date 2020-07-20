@@ -20,7 +20,7 @@
 
 <script>
 import { Component, Vue } from 'vue-property-decorator'
-import SampleDialog from 'app/library/components/dialogs/SampleDialog'
+import SampleDialog from '../dialogs/SampleDialog'
 
 export default @Component({
     name: 'taxonomy-detail',

@@ -6,11 +6,11 @@
 import TaxonomyEditor from './components/editor/TaxonomyEditor.vue'
 import axios from 'axios'
 import { TaxonomyComponentFactory } from './types'
-import DefaultTermViewComponent from 'app/library/components/default/DefaultTermViewComponent'
-import DefaultTaxonomyViewComponent from 'app/library/components/default/DefaultTaxonomyViewComponent'
-import DefaultEditDialogComponent from 'app/library/components/default/DefaultEditDialogComponent'
-import TermComponent from 'app/library/components/TermComponent'
-import TermSelect from 'app/library/components/dialogs/TermSelect'
+import DefaultTermViewComponent from './components/default/DefaultTermViewComponent.vue'
+import DefaultTaxonomyViewComponent from './components/default/DefaultTaxonomyViewComponent.vue'
+import DefaultEditDialogComponent from './components/default/DefaultEditDialogComponent.vue'
+import TermComponent from './components/TermComponent.vue'
+import TermSelect from './components/dialogs/TermSelect.vue'
 
 class Taxonomies {
     constructor (options) {

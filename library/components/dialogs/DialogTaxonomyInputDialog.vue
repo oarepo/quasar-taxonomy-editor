@@ -1,6 +1,6 @@
 <template>
 <div>
-    <q-dialog ref="dialog" @hide="onDialogHide">
+    <q-dialog ref="dialog" @hide="onDialogHide" class="taxonomy">
         <q-card class="q-dialog-plugin" style="width: 700px; max-width: 80vw; ">
             <q-card-section v-if="title">
                 <div class="text-h6">
@@ -98,7 +98,3 @@ class DialogTaxonomyInputDialog extends Vue {
     }
 }
 </script>
-<style scoped lang="stylus">
-div.inline-term
-    display inline-block
-</style>

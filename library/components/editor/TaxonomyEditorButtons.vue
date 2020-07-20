@@ -46,6 +46,3 @@ export default @Component({
 class TaxonomyEditorButtons {
 }
 </script>
-
-<style lang="stylus" scoped>
-</style>

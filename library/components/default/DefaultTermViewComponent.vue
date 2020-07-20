@@ -15,8 +15,3 @@ export default @Component({
 class DefaultTermViewComponent extends Vue {
 }
 </script>
-<style>
-.tree-checkbox.disabled {
-    background-color: gray;
-}
-</style>

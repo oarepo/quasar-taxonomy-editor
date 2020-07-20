@@ -1,5 +1,5 @@
-import DefaultTermViewComponent from 'app/library/components/default/DefaultTermViewComponent'
-import DefaultTaxonomyViewComponent from 'app/library/components/default/DefaultTaxonomyViewComponent'
+import DefaultTermViewComponent from './components/default/DefaultTermViewComponent.vue'
+import DefaultTaxonomyViewComponent from './components/default/DefaultTaxonomyViewComponent.vue'
 
 export class TaxonomyComponentFactory {
     getComponent ({ taxonomy, term }) {

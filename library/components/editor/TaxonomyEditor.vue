@@ -1,5 +1,5 @@
 <template>
-<div class="container q-mt-lg">
+<div class="container taxonomy q-mt-lg">
     <taxonomy-tree :taxonomy-code="taxonomyCode" :start-expanded="startExpanded" ref="tree">
         <template v-slot:buttons-middle="{parentUrl}">
         <slot name="buttons-middle" v-bind:parentUrl="parentUrl"></slot>
@@ -34,7 +34,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import TaxonomyEditorButtons from './TaxonomyEditorButtons.vue'
 import TaxonomyTree from '../TaxonomyTree.vue'
 import EditDialog from '../dialogs/EditDialog.vue'
-import MoveDialog from 'app/library/components/dialogs/MoveDialog'
+import MoveDialog from '../dialogs/MoveDialog.vue'
 
 export default @Component({
     name: 'taxonomy-editor',
@@ -175,14 +175,3 @@ class TaxonomyEditor extends Vue {
     }
 }
 </script>
-
-<style lang="stylus" scoped>
-.tree
-    min-height 10vh
-
-    .buttons
-        margin-left: 0px
-
-    .title
-        color: $secondary
-</style>

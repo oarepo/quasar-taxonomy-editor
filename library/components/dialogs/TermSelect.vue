@@ -56,8 +56,8 @@
 
 <script>
 import { Vue, Component, Watch } from 'vue-property-decorator'
-import DialogTaxonomyInputDialog from './DialogTaxonomyInputDialog'
-import { copyValue, termOrArrayChanged } from 'app/library/utils'
+import DialogTaxonomyInputDialog from './DialogTaxonomyInputDialog.vue'
+import { copyValue, termOrArrayChanged } from '../../utils'
 
 const DEFAULT = {}
 
