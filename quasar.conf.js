@@ -74,7 +74,7 @@ module.exports = function (/* ctx */) {
                     exclude: /node_modules/
                 })
                 cfg.resolve.alias['@oarepo/quasar-taxonomy-editor'] =
-                    path.join(__dirname, 'library/index.js')
+                    path.join(__dirname, 'library')
             }
         },
 

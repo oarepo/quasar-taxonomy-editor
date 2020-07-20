@@ -3,7 +3,7 @@
     <div class="buttons row">
         <slot name="buttons-left" v-bind:parentUrl="parentUrl"></slot>
         <q-btn flat color="primary" dense @click="taxonomyUp()"
-               title="Taxonomy up" v-if="hasParent">
+               :title="$t('taxonomy.tree.up')" v-if="hasParent">
             <q-icon name="subdirectory_arrow_left" class="rotate-90"></q-icon>
             <div class="row q-mr-sm" v-if="parentListTerm">
                 <div class="title row q-mt-sm q-ml-sm q-mr-sm">
@@ -18,10 +18,10 @@
             <q-separator vertical spaced color="secondary" v-if="hasParent"></q-separator>
         </div>
         <q-btn icon="expand_more" flat color="primary" dense @click="expand"
-               title="expand all"></q-btn>
+               :title="$t('taxonomy.tree.expand')"></q-btn>
         <q-btn icon="expand_less" flat color="primary" dense
                @click="collapse"
-               title="collapse all"></q-btn>
+               :title="$t('taxonomy.tree.expand')"></q-btn>
         <slot name="buttons-middle" v-bind:parentUrl="parentUrl"></slot>
         <q-space/>
         <q-pagination v-model="page" :max="maxPage" :direction-links="true" :max-pages="6"
@@ -44,10 +44,10 @@
                             <q-icon color="primary" name="vertical_split" class="rotate-180" v-else></q-icon>
                         </q-item-section>
                         <q-item-section v-if="!singleLevel">
-                            Hide hierarchy
+                            {{$t('taxonomy.tree.hideHierarchy')}}
                         </q-item-section>
                         <q-item-section v-else>
-                            Show hierarchy
+                            {{$t('taxonomy.tree.showHierarchy')}}
                         </q-item-section>
                     </q-item>
                     <q-item clickable v-close-popup @click="deleted = !deleted; loadTaxonomy()">
@@ -56,10 +56,10 @@
                             <q-icon color="grey" name="delete_outline" class="rotate-180" v-else></q-icon>
                         </q-item-section>
                         <q-item-section v-if="!deleted">
-                            Show deleted
+                            {{$t('taxonomy.tree.showDeleted')}}
                         </q-item-section>
                         <q-item-section v-else>
-                            Hide deleted
+                            {{$t('taxonomy.tree.hideHierarchy')}}
                         </q-item-section>
                     </q-item>
                     <q-separator></q-separator>
@@ -68,7 +68,7 @@
                             <q-icon name="refresh" color="primary"></q-icon>
                         </q-item-section>
                         <q-item-section>
-                            Refresh
+                            {{$t('taxonomy.tree.refresh')}}
                         </q-item-section>
                     </q-item>
                     <slot name="menu" v-bind:parentUrl="parentUrl"></slot>
@@ -107,15 +107,15 @@
                         </q-badge>
                         <q-badge color="negative" size="sm" outline class="q-ml-sm"
                                  v-if="node.data.status !== 'alive'">
-                            {{ node.data.status }}
+                            {{ $t(`taxonomy.status.${node.data.status}`) }}
                         </q-badge>
                         <q-badge color="negative" size="sm" outline class="q-ml-sm"
                                  v-if="node.data.descendants_busy_count">
-                            {{node.data.descendants_busy_count}} locked
+                            {{ $tc('taxonomy.lockedNumber', node.data.descendants_busy_count)}}
                         </q-badge>
                         <q-badge color="negative" size="sm" outline class="q-ml-sm"
                                  v-if="node.data.busy_count">
-                            Locked
+                            {{ $t('taxonomy.locked') }}
                         </q-badge>
                     </div>
                     <slot name="term-buttons" v-bind:term="node.data" v-bind:node="node"></slot>

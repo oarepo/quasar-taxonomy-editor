@@ -28,9 +28,9 @@
                 </div>
             </q-card-section>
             <q-card-actions align="right">
-                <q-btn @click="hide" flat color="grey">Cancel</q-btn>
+                <q-btn @click="hide" flat color="grey">{{$t('taxonomy.cancel')}}</q-btn>
                 <q-btn @click="onOKClick" flat color="positive" icon="done" v-if="multiple"><span
-                    class="q-pl-sm">Ok</span>
+                    class="q-pl-sm">{{$t('taxonomy.ok')}}</span>
                 </q-btn>
             </q-card-actions>
         </q-card>

@@ -1,7 +1,7 @@
 <template>
 <q-form ref="form">
     <q-input label="Continent name" focused v-model="model.title" ref="title"></q-input>
-    <q-item-label class="q-pt-md q-pb-sm text-grey">Description</q-item-label>
+    <q-item-label class="q-pt-md q-pb-sm text-grey">{{$t('taxonomy.description')}}</q-item-label>
     <q-editor v-model="model.description"></q-editor>
 </q-form>
 </template>

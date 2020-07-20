@@ -10,7 +10,7 @@
                 <q-icon name="dialpad" color="primary"></q-icon>
             </q-item-section>
             <q-item-section>
-                Test dialog
+                {{$t('taxonomy.testDialog')}}
             </q-item-section>
         </q-item>
         </template>

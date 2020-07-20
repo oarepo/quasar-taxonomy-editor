@@ -9,10 +9,10 @@
                     <q-card-section :class="titleClass">
                         <div class="text-h4">{{$taxonomies.titleGetter(taxonomy)}}</div>
                         <q-badge color="primary" v-if="taxonomy.descendants_count">
-                            {{ taxonomy.descendants_count }} terms
+                            {{ $tc('taxonomy.descendantsCountNumber', taxonomy.descendants_count) }}
                         </q-badge>
                         <q-badge color="negative" v-if="taxonomy.descendants_busy_count">
-                            {{ taxonomy.descendants_busy_count }} pending operations
+                            {{ $tc('taxonomy.pendingOperationNumber', taxonomy.descendants_busy_count) }}
                         </q-badge>
                     </q-card-section>
                 </slot>
@@ -37,9 +37,6 @@
     <slot name="buttons">
         <div :class="buttonsClass">
             <slot name="extra-buttons"></slot>
-            <q-btn flat icon="add" color="primary">
-                <span class="q-pl-sm">{{ $t('taxonomy.add') }}</span>
-            </q-btn>
         </div>
     </slot>
 </div>

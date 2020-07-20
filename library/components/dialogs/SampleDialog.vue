@@ -4,24 +4,24 @@
         <q-card-section class="q-mt-lg">
             <div class="row">
                 <div class="col q-ma-md">
-                    <div class="text-h6">Single selection</div>
+                    <div class="text-h6">{{$t('taxonomy.singleSelection')}}</div>
                     <div class="q-mt-lg"></div>
                     <term-select :taxonomy-code="taxonomyCode"
                                  v-model="single"
                                  :multiple="false"
                                  placeholder="Start writing or click on the icon 🡒"></term-select>
-                    <div class="text-h6 q-mt-xl q-mb-md">Selected value:</div>
+                    <div class="text-h6 q-mt-xl q-mb-md">{{$t('taxonomy.selectedValue')}}</div>
                     <taxonomy-term :taxonomy-code="taxonomyCode" :term="single" v-if="single"></taxonomy-term>
                 </div>
                 <q-separator vertical></q-separator>
                 <div class="col q-ma-md">
-                    <div class="text-h6">Multiple selection</div>
+                    <div class="text-h6">{{$t('taxonomy.multipleSelection')}}</div>
                     <div class="q-mt-lg"></div>
                     <term-select :taxonomy-code="taxonomyCode"
                                  v-model="multiple"
                                  :multiple="true"
                                  placeholder="Start writing or click on the icon 🡒"></term-select>
-                    <div class="text-h6 q-mt-xl q-mb-md">Selected value(s):</div>
+                    <div class="text-h6 q-mt-xl q-mb-md">{{$t('taxonomy.selectedValues')}}</div>
                     <taxonomy-term :taxonomy-code="taxonomyCode" :term="term"
                                    v-for="term in multiple" :key="term.slug"
                     ></taxonomy-term>
@@ -30,7 +30,7 @@
         </q-card-section>
         <q-separator></q-separator>
         <q-card-actions align="right">
-            <q-btn @click="hide">Close</q-btn>
+            <q-btn @click="hide">{{$t('taxonomy.close')}}</q-btn>
         </q-card-actions>
     </q-card>
 </q-dialog>

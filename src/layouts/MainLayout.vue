@@ -11,6 +11,9 @@
                         </q-avatar>
                         {{ $t('taxonomy.layoutDemo') }}
                     </q-toolbar-title>
+                    <q-space></q-space>
+                    <q-select :options="languages" v-model="$i18n.locale" dark emit-value map-options borderless>
+                    </q-select>
                 </q-toolbar>
             </q-header>
 
@@ -27,6 +30,22 @@
 
 <script>
 export default {
-    name: 'MainLayout'
+    name: 'MainLayout',
+
+    data: () => {
+        return {
+            languages: [
+                {
+                    value: 'en-us',
+                    label: 'English'
+                },
+                {
+                    value: 'cs-cz',
+                    label: 'Czech'
+                }
+            ],
+            language: 'en'
+        }
+    }
 }
 </script>

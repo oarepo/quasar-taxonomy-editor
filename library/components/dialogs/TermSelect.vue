@@ -12,7 +12,7 @@
               @filter="filterFn"
               @filter-abort="abortFilterFn"
               :hint="hint"
-              :placeholder="emptyModel ? placeholder: ''"
+              :placeholder="emptyModel ? translatedPlaceholder: ''"
               @keydown="onKeyDown()"
               @input="clearText()"
               ref="select">
@@ -20,10 +20,10 @@
         <q-item>
             <q-item-section class="text-grey">
                 <div v-if="searchValue">
-                    No results
+                    {{$t('taxonomy.noResults')}}
                 </div>
                 <div v-else>
-                    Type a few letters or click on the tree icon on the right
+                    {{$t('taxonomy.typeAFewLetters')}}
                 </div>
             </q-item-section>
         </q-item>
@@ -31,7 +31,7 @@
 
         <template v-slot:after>
         <q-btn round flat color="primary" dense @click="showTaxonomy"
-               title="list/hierarchy">
+               :title="$t('taxonomy.showTaxonomyTree')">
             <q-icon name="vertical_split" class="rotate-180"></q-icon>
         </q-btn>
         </template>
@@ -59,6 +59,8 @@ import { Vue, Component, Watch } from 'vue-property-decorator'
 import DialogTaxonomyInputDialog from './DialogTaxonomyInputDialog'
 import { copyValue, termOrArrayChanged } from 'app/library/utils'
 
+const DEFAULT = {}
+
 export default @Component({
     name: 'term-select',
     props: {
@@ -75,8 +77,8 @@ export default @Component({
         label: String,
         hint: String,
         placeholder: {
-            type: String,
-            default: 'Start writing or click on the icon 🡒'
+            type: [String, Object],
+            default: () => DEFAULT
         },
         selectorTitle: String
     }
@@ -150,6 +152,13 @@ class TermSelect extends Vue {
 
     openSelector () {
         this.showTaxonomy()
+    }
+
+    get translatedPlaceholder () {
+        if (this.placeholder !== DEFAULT) {
+            return this.placeholder
+        }
+        return this.$t('taxonomy.startWriting')
     }
 }
 </script>

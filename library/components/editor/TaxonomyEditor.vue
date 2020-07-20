@@ -125,8 +125,8 @@ class TaxonomyEditor extends Vue {
 
     removeNode ({ term, node }) {
         this.$q.dialog({
-            title: 'Deleting taxonomy term',
-            message: 'Do you really want to delete taxonomy term? This action can not be undone!',
+            title: this.$t('taxonomy.deleteDialog.title'),
+            message: this.$t('taxonomy.deleteDialog.message'),
             cancel: true,
             focus: 'cancel',
             persistent: true
@@ -136,15 +136,14 @@ class TaxonomyEditor extends Vue {
             }).catch(error => {
                 if (error.response.status === 409) {
                     this.$q.notify({
-                        message: 'This term is referenced from other resources. ' +
-                            'Please change the resources before term removal.',
+                        message: this.$t('taxonomy.deleteDialog.referenced'),
                         color: 'red',
                         position: 'center',
                         icon: 'block'
                     })
                 } else if (error.response.status === 412) {
                     this.$q.notify({
-                        message: 'This term is locked, please wait until the locking process finishes',
+                        message: this.$t('taxonomy.deleteDialog.locked'),
                         color: 'red',
                         position: 'center',
                         icon: 'block'
@@ -166,38 +165,6 @@ class TaxonomyEditor extends Vue {
             this.$refs.tree.loadTaxonomy()
         })
     }
-
-    //
-    // _onAddError (reason) {
-    //     console.log(reason)
-    //     if (reason.response) {
-    //         if (reason.response.status === 412) {
-    //             alert('Resource already exists')
-    //         } else {
-    //             alert('Taxonomy error: ' + reason.response.data)
-    //         }
-    //     }
-    // }
-
-    //
-    // dragStart (node) {
-    // }
-    //
-    // dragFinish (node, targetNode, dropPosition) {
-    //     this.$axios.post(node.data.links.self, '', {
-    //         headers: {
-    //             Destination: targetNode.data.links.self,
-    //             'Destination-Order': {
-    //                 'drag-on': 'inside',
-    //                 'drag-above': 'before',
-    //                 'drag-below': 'after'
-    //             }[dropPosition],
-    //             'Content-Type': 'application/vnd.move'
-    //         }
-    //     }).then(resp => {
-    //         console.log('Dragging finished', resp)
-    //     })
-    // }
 
     getTermEditComponent ({ term, parent }) {
         return this.$taxonomies.getTermEditComponent({

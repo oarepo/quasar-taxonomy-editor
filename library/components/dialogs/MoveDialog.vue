@@ -2,7 +2,7 @@
 <q-dialog ref="dialog" @hide="onDialogHide">
     <q-card class="q-dialog-plugin full-width">
         <q-card-section>
-            <div class="text-h6">Move term</div>
+            <div class="text-h6">{{$t('taxonomy.moveTerm')}}</div>
         </q-card-section>
         <q-card-section>
             <q-chip outline color="primary" class="q-pa-md">
@@ -11,16 +11,16 @@
             </q-chip>
         </q-card-section>
         <q-card-section>
-            <div class="text-h6 q-pt-md">Into</div>
+            <div class="text-h6 q-pt-md">{{$t('taxonomy.moveInto')}}</div>
         </q-card-section>
         <q-card-section>
             <term-select :taxonomy-code="taxonomyCode" v-model="selected" ref="select"
-                         selector-title="Select destination"
+                         :selector-title="$t('taxonomy.selectDestination')"
             ></term-select>
         </q-card-section>
         <q-card-actions align="right" class="q-pa-lg">
-            <q-btn flat label="Cancel" @click="onCancelClick"/>
-            <q-btn color="primary" label="Do it !" @click="onOKClick" focused/>
+            <q-btn flat :label="$t('taxonomy.cancel')" @click="onCancelClick"/>
+            <q-btn color="primary" :label="$t('taxonomy.doit')" @click="onOKClick" focused/>
         </q-card-actions>
     </q-card>
 </q-dialog>
@@ -61,9 +61,8 @@ class MoveDialog extends Vue {
             return
         }
         this.$q.dialog({
-            title: 'Moving taxonomy term',
-            message: 'Do you really want to move the taxonomy term to a new parent? ' +
-                'This action can not be undone and may take a lot of time!',
+            title: this.$t('taxonomy.moveDialog.title'),
+            message: this.$t('taxonomy.moveDialog.message'),
             cancel: true,
             focus: 'cancel',
             persistent: true
@@ -74,7 +73,7 @@ class MoveDialog extends Vue {
             }).catch((exception) => {
                 if (exception.response.status === 412) {
                     this.$q.notify({
-                        message: 'This term is locked, please wait until the locking process finishes.',
+                        message: this.$t('taxonomy.moveDialog.locked'),
                         color: 'red',
                         position: 'center',
                         icon: 'block'

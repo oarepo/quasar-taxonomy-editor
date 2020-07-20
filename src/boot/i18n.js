@@ -8,7 +8,21 @@ Vue.use(VueI18n)
 const i18n = new VueI18n({
     locale: 'en-us',
     fallbackLocale: 'en-us',
-    messages
+    messages,
+    pluralizationRules: {
+        'cs-cz': function (choice, choicesLength) {
+            if (choice === 0) {
+                return 0
+            }
+            if (choice === 1) {
+                return 1
+            }
+            if (choice <= 5) {
+                return 2
+            }
+            return 3
+        }
+    }
 })
 
 export default ({ app }) => {
