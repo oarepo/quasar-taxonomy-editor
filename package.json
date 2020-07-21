@@ -1,6 +1,6 @@
 {
   "name": "@oarepo/quasar-taxonomy-editor",
-  "version": "1.2.10",
+  "version": "2.0.0-ualpha.0",
   "description": "An editor and set of selectors for taxonomies",
   "productName": "Quasar taxonomy editor",
   "cordovaId": "org.oarepo.vue_taxonomy_editor",
@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "eslint --ext .js,.vue ./",
     "test": "echo \"No test specified\" && exit 0",
-    "build": "NODE_ENV=production rollup --config build/rollup.config.js && cp -r library/i18n dist/ && cp package.json dist/",
+    "build": "rm -rf dist; NODE_ENV=production rollup --config build/rollup.config.js && cp -r library/i18n dist/ && node build/copy-package.js",
     "run": "quasar dev"
   },
   "dependencies": {
@@ -28,9 +28,9 @@
     "@vue/compiler-sfc": "^3.0.0-rc.2",
     "babel-eslint": "^10.0.1",
     "babel-plugin-syntax-dynamic-import": "^6.18.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.5.0",
     "eslint-config-standard": "^14.1.0",
-    "eslint-loader": "^3.0.3",
+    "eslint-loader": "^4.0.2",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-promise": "^4.0.1",
