@@ -11,7 +11,7 @@
 import { Vue, Component } from 'vue-property-decorator'
 
 export default @Component({
-    name: 'taxonomy-term',
+    name: 'editor-taxonomy-term',
     props: {
         term: Object,
         taxonomyCode: String,

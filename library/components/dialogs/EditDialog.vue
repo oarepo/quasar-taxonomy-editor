@@ -1,25 +1,39 @@
 <template>
-<q-dialog ref="dialog" @hide="onDialogHide">
-    <q-card class="q-dialog-plugin">
-        <q-card-section>
-            <component :is="editor" :initial="initial" ref="editor"></component>
-        </q-card-section>
-        <q-card-actions align="right">
-            <q-btn flat label="Cancel" @click="onCancelClick"/>
-            <q-btn flat color="primary" label="Save" @click="onOKClick" focused/>
-        </q-card-actions>
-    </q-card>
-</q-dialog>
+    <q-dialog ref="dialog" @hide="onDialogHide">
+        <q-card class="q-dialog-plugin">
+            <q-card-section>
+                <component :is="editor" :initial="initial" ref="editor"></component>
+            </q-card-section>
+            <q-card-actions align="right">
+                <q-btn flat label="Cancel" @click="onCancelClick"/>
+                <q-btn flat color="primary" label="Save" @click="onOKClick" focused/>
+            </q-card-actions>
+        </q-card>
+    </q-dialog>
 </template>
 
 <script>
 import { Vue, Component } from 'vue-property-decorator'
+import {
+    QDialog,
+    QCard,
+    QCardSection,
+    QCardActions,
+    QBtn
+} from 'quasar'
 
 export default @Component({
     props: {
         initial: Object,
         saveOperation: Function,
         editor: [Object, Function]
+    },
+    components: {
+        QDialog,
+        QCard,
+        QCardSection,
+        QCardActions,
+        QBtn
     }
 })
 class EditDialog extends Vue {

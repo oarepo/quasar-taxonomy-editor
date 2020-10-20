@@ -55,6 +55,7 @@ export default {
             delete_pending: 'bude smazán'
         },
         lockedNumber: ' | 1 zámek | {n} zámky | {n} zámků',
-        locked: 'Uzamčen'
+        locked: 'Uzamčen',
+        selected: 'Vybráno'
     }
 }

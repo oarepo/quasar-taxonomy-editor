@@ -56,6 +56,7 @@ export default {
             delete_pending: 'delete pending'
         },
         lockedNumber: ' | 1 locked | {n} locked | {n} locked',
-        locked: 'Locked'
+        locked: 'Locked',
+        selected: 'Selected'
     }
 }

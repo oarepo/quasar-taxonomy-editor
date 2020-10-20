@@ -91,6 +91,11 @@ class Taxonomies {
         }
     }
 
+    async loadTaxonomyTermElasticsearch (url) {
+        const ret = (await axios.get(`${url}?representation:include=anl,ant,par`)).data
+        return ret
+    }
+
     async suggest ({ code, filter, size }) {
         const url = `${this.taxonomiesUrl}${code}?page=1&size=${size || 20}&representation:include=dsc,anc,slug,dcn,drl,lvl&q=${encodeURIComponent(filter)}`
         const ret = await axios.get(url)
@@ -193,7 +198,7 @@ class Taxonomies {
 const VueTaxonomy = {
     install (Vue, options = {}) {
         Vue.component('taxonomy-editor', TaxonomyEditor)
-        Vue.component('taxonomy-term', TermComponent)
+        Vue.component('editor-taxonomy-term', TermComponent)
         Vue.component('term-select', TermSelect)
         Vue.prototype.$taxonomies = new Taxonomies(options)
     }

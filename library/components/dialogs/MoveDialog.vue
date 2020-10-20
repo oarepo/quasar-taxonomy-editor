@@ -1,34 +1,42 @@
 <template>
-<q-dialog ref="dialog" @hide="onDialogHide">
-    <q-card class="q-dialog-plugin full-width">
-        <q-card-section>
-            <div class="text-h6">{{$t('taxonomy.moveTerm')}}</div>
-        </q-card-section>
-        <q-card-section>
-            <q-chip outline color="primary" class="q-pa-md">
-                <taxonomy-term :term="term" :taxonomy-code="taxonomyCode"
-                               usage="inplace"></taxonomy-term>
-            </q-chip>
-        </q-card-section>
-        <q-card-section>
-            <div class="text-h6 q-pt-md">{{$t('taxonomy.moveInto')}}</div>
-        </q-card-section>
-        <q-card-section>
-            <term-select :taxonomy-code="taxonomyCode" v-model="selected" ref="select"
-                         :selector-title="$t('taxonomy.selectDestination')"
-            ></term-select>
-        </q-card-section>
-        <q-card-actions align="right" class="q-pa-lg">
-            <q-btn flat :label="$t('taxonomy.cancel')" @click="onCancelClick"/>
-            <q-btn color="primary" :label="$t('taxonomy.doit')" @click="onOKClick" focused/>
-        </q-card-actions>
-    </q-card>
-</q-dialog>
+    <q-dialog ref="dialog" @hide="onDialogHide">
+        <q-card class="q-dialog-plugin full-width">
+            <q-card-section>
+                <div class="text-h6">{{ $t('taxonomy.moveTerm') }}</div>
+            </q-card-section>
+            <q-card-section>
+                <q-chip outline color="primary" class="q-pa-md">
+                    <editor-taxonomy-term :term="term" :taxonomy-code="taxonomyCode"
+                                   usage="inplace"></editor-taxonomy-term>
+                </q-chip>
+            </q-card-section>
+            <q-card-section>
+                <div class="text-h6 q-pt-md">{{ $t('taxonomy.moveInto') }}</div>
+            </q-card-section>
+            <q-card-section>
+                <term-select :taxonomy-code="taxonomyCode" v-model="selected" ref="select"
+                             :selector-title="$t('taxonomy.selectDestination')"
+                ></term-select>
+            </q-card-section>
+            <q-card-actions align="right" class="q-pa-lg">
+                <q-btn flat :label="$t('taxonomy.cancel')" @click="onCancelClick"/>
+                <q-btn color="primary" :label="$t('taxonomy.doit')" @click="onOKClick" focused/>
+            </q-card-actions>
+        </q-card>
+    </q-dialog>
 </template>
 
 <script>
 import { Component, Vue } from 'vue-property-decorator'
 import TaxonomyTree from '../TaxonomyTree.vue'
+import {
+    QDialog,
+    QCard,
+    QCardSection,
+    QChip,
+    QCardActions,
+    QBtn
+} from 'quasar'
 
 export default @Component({
     props: {
@@ -37,7 +45,13 @@ export default @Component({
         moveOperation: Function
     },
     components: {
-        TaxonomyTree
+        TaxonomyTree,
+        QDialog,
+        QCard,
+        QCardSection,
+        QChip,
+        QCardActions,
+        QBtn
     }
 })
 class MoveDialog extends Vue {
